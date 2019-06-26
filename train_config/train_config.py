@@ -25,7 +25,7 @@ def create_model() -> Module:
 class BaseTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
-    batch_size = 1
+    batch_size = 4
 
     def __init__(self, fold_indices: {}):
         model = self.create_model().cuda()
