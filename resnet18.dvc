@@ -1,0 +1,11 @@
+cmd: python train.py -m resnet18
+wdir: .
+deps:
+- path: train.py
+- path: data/indices/train.npy
+- path: data/indices/val.npy
+outs:
+- path: experiments/exp1/resnet18
+  cache: true
+  metric: false
+  persist: false

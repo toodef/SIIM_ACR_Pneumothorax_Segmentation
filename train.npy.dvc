@@ -1,0 +1,13 @@
+cmd: python prepare_dataset.py
+wdir: .
+deps:
+- path: prepare_dataset.py
+outs:
+- path: data/indices/train.npy
+  cache: true
+  metric: false
+  persist: false
+- path: data/indices/val.npy
+  cache: true
+  metric: false
+  persist: false
