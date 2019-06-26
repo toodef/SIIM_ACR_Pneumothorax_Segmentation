@@ -1,0 +1,7 @@
+cv_utils
+albumentations
+neural-pipeline
+numpy
+torch>=0.4.1
+torchvision
+pandas
