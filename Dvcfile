@@ -1,6 +1,0 @@
-cmd: python predict.py
-wdir: .
-deps:
-- path: predict.py
-- path: experiments/exp1
-- path: data/indices/test.npy

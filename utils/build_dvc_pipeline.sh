@@ -32,15 +32,17 @@ dvc run -d train.py \
 git add resnet34.dvc
 
 dvc run -d predict.py \
-  -d experiments/$EXP_DIR \
+  -d experiments/$EXP_DIR/resnet18 \
   -d data/indices/test.npy \
-  -o out/resnet18_out.csv
-  --no-exec python predict.py -m resnet18 -o data/resnet18_out.csv
+  -o out/resnet18_out.csv \
+  --no-exec python predict.py -m resnet18 -o out/resnet18_out.csv
+
+git add resnet18_out.csv.dvc
 
 dvc run -d predict.py \
-  -d experiments/$EXP_DIR \
+  -d experiments/$EXP_DIR/resnet34 \
   -d data/indices/test.npy \
-  -o out/resnet34_out.csv
-  --no-exec python predict.py -m resnet34 -o data/resnet34_out.csv
+  -o out/resnet34_out.csv \
+  --no-exec python predict.py -m resnet34 -o out/resnet34_out.csv
 
-git add Dvcfile
+git add resnet34_out.csv.dvc
