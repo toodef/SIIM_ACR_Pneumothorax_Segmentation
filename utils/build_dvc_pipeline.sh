@@ -34,6 +34,13 @@ git add resnet34.dvc
 dvc run -d predict.py \
   -d experiments/$EXP_DIR \
   -d data/indices/test.npy \
-  --no-exec python predict.py
+  -o out/resnet18_out.csv
+  --no-exec python predict.py -m resnet18 -o data/resnet18_out.csv
+
+dvc run -d predict.py \
+  -d experiments/$EXP_DIR \
+  -d data/indices/test.npy \
+  -o out/resnet34_out.csv
+  --no-exec python predict.py -m resnet34 -o data/resnet34_out.csv
 
 git add Dvcfile

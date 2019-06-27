@@ -1,6 +1,7 @@
 import os
 from abc import ABCMeta, abstractmethod
 
+import torch
 from cv_utils.losses.common import Reduction
 from cv_utils.losses.segmentation import BCEDiceLoss
 from cv_utils.metrics.torch.segmentation import SegmentationMetricsProcessor
@@ -19,13 +20,13 @@ def create_model() -> Module:
     enc = ResNet18(in_channels=1)
     ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
     model = UNetDecoder(enc, classes_num=1)
-    return ModelWithActivation(model, activation='sigmoid')
+    return torch.nn.Sequential([model, torch.nn.Sigmoid()])
 
 
 class BaseTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
-    batch_size = 4
+    batch_size = 2
 
     def __init__(self, fold_indices: {}):
         model = self.create_model().cuda()
@@ -46,7 +47,7 @@ class BaseTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.train_stage = TrainStage(self._train_data_producer, SegmentationMetricsProcessor('train'))
         self.val_stage = ValidationStage(self._val_data_producer, SegmentationMetricsProcessor('validation'))
 
-        loss = BCEDiceLoss(0.5, 0.5, reduction=Reduction('sum')).cuda()
+        loss = BCEDiceLoss(0.5, 0.5, reduction=Reduction('mean')).cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)

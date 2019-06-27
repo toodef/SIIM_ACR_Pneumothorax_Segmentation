@@ -25,12 +25,16 @@ class Dataset(BasicDataset):
         root = os.environ[self.env_name]
 
         labels = np.genfromtxt(os.path.join(root, 'train-rle.csv'), delimiter=',', dtype=str)[1:]
+        self._is_test = is_test
         images_root = os.path.join(root, 'dicom-images-test' if is_test else 'dicom-images-train')
         items = self._parse_test_items(images_root) if is_test else self._parse_train_items(images_root, labels)
 
         super().__init__(items)
 
     def _interpret_item(self, it) -> any:
+        if self._is_test:
+            return pydicom.dcmread(it).pixel_array
+
         ds = pydicom.dcmread(it[0])
         img = ds.pixel_array
         rles = it[1]
@@ -38,8 +42,7 @@ class Dataset(BasicDataset):
             mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
             for rle in rles:
                 mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32)
-            mask = cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE)
-            mask = cv2.flip(mask, 1)
+            mask = mask.T
         else:
             mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
         return {'data': img, 'target': mask}

@@ -31,7 +31,7 @@ def train(config_type: BaseTrainConfig):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train')
     parser.add_argument('-m', '--model', type=str, help='Train one model', required=True,
-                        choices=['resnet18', 'resnet34', 'resnet101'])
+                        choices=['resnet18', 'resnet34'])
 
     if len(sys.argv) < 2:
         print('Bad arguments passed', file=sys.stderr)
