@@ -1,7 +1,7 @@
-cmd: python predict.py -m resnet34 -o out/resnet34_out.csv
+cmd: python predict_model.py -m resnet34 -o out/resnet34_out.csv
 wdir: .
 deps:
-- path: predict.py
+- path: predict_model.py
 - path: experiments/exp1/resnet34
 - path: data/indices/test.npy
 outs:

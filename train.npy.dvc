@@ -2,12 +2,16 @@ cmd: python prepare_dataset.py
 wdir: .
 deps:
 - path: prepare_dataset.py
+  md5: 45ecff69b1911089c6abc0490e751111
 outs:
 - path: data/indices/train.npy
   cache: true
   metric: false
   persist: false
+  md5: d8524223e633ac47d1c185ec34ed13a7
 - path: data/indices/val.npy
   cache: true
   metric: false
   persist: false
+  md5: 9c11c9d7405230b5759cba0840cd074d
+md5: b044e0a6383fdfc07a53b26898a29f82
