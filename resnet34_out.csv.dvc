@@ -3,7 +3,6 @@ wdir: .
 deps:
 - path: predict_model.py
 - path: experiments/exp1/resnet34
-- path: data/indices/test.npy
 outs:
 - path: out/resnet34_out.csv
   cache: true
