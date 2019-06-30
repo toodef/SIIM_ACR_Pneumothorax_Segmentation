@@ -41,7 +41,7 @@ class Dataset(BasicDataset):
         if type(rles) is list:
             mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
             for rle in rles:
-                mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32)
+                mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32) / 255
             mask = mask.T
         else:
             mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
