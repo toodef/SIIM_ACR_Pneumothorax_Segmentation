@@ -31,7 +31,7 @@ dvc run -d train.py \
 
 git add resnet34.dvc
 
-dvc run -d predict_mode.py \
+dvc run -d predict_model.py \
   -d experiments/$EXP_DIR/resnet18 \
   -d data/indices/test.npy \
   -o out/resnet18_out.csv \
