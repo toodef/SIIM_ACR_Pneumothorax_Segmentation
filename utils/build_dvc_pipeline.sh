@@ -33,7 +33,6 @@ git add resnet34.dvc
 
 dvc run -d predict_model.py \
   -d experiments/$EXP_DIR/resnet18 \
-  -d data/indices/test.npy \
   -o out/resnet18_out.csv \
   --no-exec python predict_model.py -m resnet18 -o out/resnet18_out.csv
 
@@ -41,7 +40,6 @@ git add resnet18_out.csv.dvc
 
 dvc run -d predict_model.py \
   -d experiments/$EXP_DIR/resnet34 \
-  -d data/indices/test.npy \
   -o out/resnet34_out.csv \
   --no-exec python predict_model.py -m resnet34 -o out/resnet34_out.csv
 
