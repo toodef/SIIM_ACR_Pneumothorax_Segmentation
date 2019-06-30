@@ -10,7 +10,7 @@ if __name__ == '__main__':
     vis = ColormapVisualizer([0.5, 0.5])
     for img_idx, d in enumerate(dataset):
         if d['target'].max() > 0:
-            img = vis.process_img(cv2.cvtColor(d['data'], cv2.COLOR_GRAY2BGR), (np.expand_dims(d['target'], axis=2)).astype(np.uint8))
+            img = vis.process_img(cv2.cvtColor(d['data'], cv2.COLOR_GRAY2BGR), (np.expand_dims(d['target'], axis=2) * 255).astype(np.uint8))
         else:
             img = d['data']
         cv2.imshow('img', img)

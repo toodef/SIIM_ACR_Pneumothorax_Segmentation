@@ -26,7 +26,7 @@ def create_model() -> Module:
 class BaseTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
-    batch_size = 2
+    batch_size = 6
 
     def __init__(self, fold_indices: {}):
         model = self.create_model().cuda()
@@ -39,9 +39,9 @@ class BaseTrainConfig(TrainConfig, metaclass=ABCMeta):
 
         val_dts = create_augmented_dataset(is_train=False, is_test=False, indices_path=os.path.join(dir, fold_indices['val']))
 
-        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=8).\
+        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=12).\
             global_shuffle(True).pin_memory(True)
-        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=8).\
+        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=12).\
             global_shuffle(True).pin_memory(True)
 
         self.train_stage = TrainStage(self._train_data_producer, SegmentationMetricsProcessor('train'))
