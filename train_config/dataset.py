@@ -7,7 +7,7 @@ from pydicom.data import get_testdata_files
 
 import numpy as np
 import torch
-from albumentations import Compose, HorizontalFlip, RandomBrightnessContrast, GaussNoise, Resize
+from albumentations import Compose, HorizontalFlip, Resize, Rotate
 from cv_utils.datasets.common import BasicDataset
 
 __all__ = ['Dataset', 'AugmentedDataset', 'create_dataset', 'create_augmented_dataset']
@@ -127,7 +127,7 @@ class Augmentations:
 
         if is_train:
             self._aug = Compose(
-                [preprocess, transforms, RandomBrightnessContrast(brightness_limit=0.4, contrast_limit=0.4), GaussNoise()])
+                [preprocess, transforms, Rotate(limit=20)])
         else:
             self._aug = preprocess
 
