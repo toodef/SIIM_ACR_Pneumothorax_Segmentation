@@ -39,8 +39,8 @@ if __name__ == '__main__':
     train_path = os.path.join(dir, 'train.npy')
     val_path = os.path.join(dir, 'val.npy')
 
-    Dataset(is_test=True).set_indices(train_indices).flush_indices(train_path)
-    Dataset(is_test=True).set_indices(val_indices).flush_indices(val_path)
+    Dataset(is_test=False).set_indices(train_indices).flush_indices(train_path)
+    Dataset(is_test=False).set_indices(val_indices).flush_indices(val_path)
 
-    Dataset(is_test=True).load_indices(train_path, remove_unused=True)
-    Dataset(is_test=True).load_indices(val_path, remove_unused=True)
+    Dataset(is_test=False).load_indices(train_path, remove_unused=True)
+    Dataset(is_test=False).load_indices(val_path, remove_unused=True)
