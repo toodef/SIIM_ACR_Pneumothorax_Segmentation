@@ -137,7 +137,7 @@ class Augmentations:
         augmented = self._aug(image=data['data'], mask=data['target'])
         if self._need_to_pytorch:
             img = np.stack([augmented['image']] * 3, axis=0)
-            image = np.expand_dims(img.astype(np.float32) / 128 - 1, 0)
+            image = img.astype(np.float32) / 128 - 1
             target = np.expand_dims(augmented['mask'], 0)
             return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
         else:
