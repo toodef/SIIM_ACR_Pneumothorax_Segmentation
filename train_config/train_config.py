@@ -16,13 +16,6 @@ from train_config.dataset import create_augmented_dataset
 __all__ = ['BaseTrainConfig', 'ResNet18TrainConfig', 'ResNet34TrainConfig']
 
 
-def create_model() -> Module:
-    enc = ResNet18(in_channels=1)
-    # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
-    model = UNetDecoder(enc, classes_num=1)
-    return torch.nn.Sequential([model, torch.nn.Sigmoid()])
-
-
 class BaseTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
@@ -68,7 +61,7 @@ class ResNet18TrainConfig(BaseTrainConfig):
         :return:
         """
         enc = ResNet18(in_channels=1)
-        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
 
@@ -83,30 +76,6 @@ class ResNet34TrainConfig(BaseTrainConfig):
         :return:
         """
         enc = ResNet34(in_channels=1)
-        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
-
-
-# class MyTrainConfig(TrainConfig):
-#     experiment_name = 'exp1'
-#     experiment_dir = os.path.join('experiments', experiment_name)  # there is dir path to
-# 
-#     def __init__(self):
-#         model = create_model()
-# 
-#         indices_dir = os.path.join('data', 'indices')
-# 
-#         train_dts = create_augmented_dataset(is_train=True, is_test=False, indices_path=os.path.join(indices_dir, 'train.npy'))
-#         val_dts = create_augmented_dataset(is_train=False, is_test=False, indices_path=os.path.join(indices_dir, 'val.npy'))
-# 
-#         self._train_data_producer = DataProducer([train_dts], batch_size=1, num_workers=0).global_shuffle(True).pin_memory(True)
-#         self._val_data_producer = DataProducer([val_dts], batch_size=1, num_workers=0).global_shuffle(True).pin_memory(True)
-# 
-#         self.train_stage = TrainStage(self._train_data_producer, SegmentationMetricsProcessor('train'))
-#         self.val_stage = ValidationStage(self._val_data_producer, SegmentationMetricsProcessor('validation'))
-# 
-#         loss = BCEDiceLoss(0.5, 0.5, reduction=Reduction('sum'))
-#         optimizer = Adam(params=model.parameters(), lr=1e-4)
-# 
-#         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
