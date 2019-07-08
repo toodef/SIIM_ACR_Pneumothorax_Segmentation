@@ -60,8 +60,8 @@ class ResNet18TrainConfig(BaseTrainConfig):
         It is better to init model by separated method
         :return:
         """
-        enc = ResNet18(in_channels=1)
-        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        enc = ResNet18(in_channels=3)
+        ModelsWeightsStorage().load(enc, 'imagenet')
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
 
@@ -75,7 +75,7 @@ class ResNet34TrainConfig(BaseTrainConfig):
         It is better to init model by separated method
         :return:
         """
-        enc = ResNet34(in_channels=1)
-        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        enc = ResNet34(in_channels=3)
+        ModelsWeightsStorage().load(enc, 'imagenet')
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
