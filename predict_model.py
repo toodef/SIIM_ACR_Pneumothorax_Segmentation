@@ -13,19 +13,6 @@ from train_config.dataset import create_dataset
 from train_config.train_config import BaseTrainConfig, ResNet18TrainConfig, ResNet34TrainConfig
 
 
-def rle_encode(img):
-    '''
-    img: numpy array, 1 - mask, 0 - background
-    Returns run length as string formated
-    '''
-    pixels = img.copy().T.flatten()
-    pixels = np.concatenate([[0], pixels, [0]])
-    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
-    runs[1::2] -= runs[::2]
-    del pixels
-    return ' '.join(str(x) for x in runs)
-
-
 def predict(config_type: BaseTrainConfig, output_file: str):
     # dataset = create_dataset(is_test=False, indices_path='data/indices/train.npy')
     dataset = create_dataset(is_test=True)
@@ -42,7 +29,7 @@ def predict(config_type: BaseTrainConfig, output_file: str):
         out_file.flush()
 
         images_paths = dataset.get_items()
-        for i, data in enumerate(dataset):
+        for i, data in enumerate(tqdm(dataset)):
             # img = data['data'].copy()
             # target = data['target'].copy()
             data = cv2.resize(data, (512, 512))
@@ -70,7 +57,7 @@ def predict(config_type: BaseTrainConfig, output_file: str):
                 # res = cv2.rotate(res, cv2.ROTATE_90_COUNTERCLOCKWISE)
 
                 res[res > 0] = 255
-                rle = rle_encode(res)
+                rle = mask2rle(res)
 
             out_file.write("{},{}\n".format(os.path.splitext(os.path.basename(images_paths[i]))[0], rle))
             out_file.flush()
