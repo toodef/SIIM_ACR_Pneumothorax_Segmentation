@@ -18,7 +18,7 @@ __all__ = ['BaseTrainConfig', 'ResNet18TrainConfig', 'ResNet34TrainConfig']
 
 def create_model() -> Module:
     enc = ResNet18(in_channels=1)
-    ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+    # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
     model = UNetDecoder(enc, classes_num=1)
     return torch.nn.Sequential([model, torch.nn.Sigmoid()])
 
