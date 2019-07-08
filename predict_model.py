@@ -45,7 +45,7 @@ def predict(config_type: BaseTrainConfig, output_file: str):
         for i, data in enumerate(dataset):
             # img = data['data'].copy()
             # target = data['target'].copy()
-            data = cv2.resize(data['data'], (512, 512))
+            data = cv2.resize(data, (512, 512))
             img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
             res = np.squeeze(predictor.predict({'data': img_tensor}).data.cpu().numpy())
             res[res < 0.9] = 0
