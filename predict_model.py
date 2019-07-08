@@ -48,7 +48,7 @@ def predict(config_type: BaseTrainConfig, output_file: str):
             data = cv2.resize(data, (512, 512))
             img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
             res = np.squeeze(predictor.predict({'data': img_tensor}).data.cpu().numpy())
-            res[res < 0.9] = 0
+            res[res < 0.7] = 0
 
             if res[res > 0].size < 101:
                 rle = -1
