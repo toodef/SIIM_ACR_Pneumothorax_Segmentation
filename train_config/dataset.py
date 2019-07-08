@@ -87,7 +87,10 @@ class Dataset(BasicDataset):
         for cur_root, dirs, files in os.walk(images_root):
             for file in files:
                 if os.path.splitext(file)[1] == ".dcm":
-                    images[os.path.splitext(file)[0]] = os.path.join(cur_root, file)
+                    identifier = os.path.splitext(file)[0]
+                    if identifier in images:
+                        raise RuntimeError('Images names are duplicated [{} and {}]'.format(file, images[identifier]))
+                    images[identifier] = os.path.join(cur_root, file)
         return images
 
 

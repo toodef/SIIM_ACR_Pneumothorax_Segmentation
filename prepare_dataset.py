@@ -26,7 +26,7 @@ def check_indices_for_intersection(indices: []):
 
 
 if __name__ == '__main__':
-    dataset = Dataset(is_test=True)
+    dataset = Dataset(is_test=False)
 
     train_indices, val_indices = stratificate_dataset(dataset, [0.8, 0.2])
 
