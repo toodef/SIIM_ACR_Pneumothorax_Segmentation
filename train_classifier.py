@@ -10,7 +10,7 @@ from neural_pipeline.builtin.monitors.tensorboard import TensorboardMonitor
 from train_config.train_config import ResNet18TrainConfig, ResNet34TrainConfig, BaseTrainConfig
 
 
-def train(config_type: BaseTrainConfig):
+def train(config_type: type(BaseTrainConfig)):
     fsm = FileStructManager(base_dir=config_type.experiment_dir, is_continue=False)
 
     config = config_type({'train': ['train.npy'], 'val': 'val.npy'})

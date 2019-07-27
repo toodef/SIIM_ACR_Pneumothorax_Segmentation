@@ -10,7 +10,8 @@ import torch
 from albumentations import Compose, HorizontalFlip, Resize, Rotate
 from cv_utils.datasets.common import BasicDataset
 
-__all__ = ['Dataset', 'AugmentedDataset', 'create_dataset', 'create_augmented_dataset']
+__all__ = ['Dataset', 'AugmentedDataset', 'create_dataset', 'create_augmented_dataset_for_seg',
+           'create_augmented_dataset_for_class']
 
 DATA_HEIGHT, DATA_WIDTH = 512, 512
 
@@ -18,14 +19,16 @@ DATA_HEIGHT, DATA_WIDTH = 512, 512
 class Dataset(BasicDataset):
     env_name = 'SIIM_ACR_PNEUMOTORAX_SEGMENTATION_DATASET'  # name of environment with path to dataset
 
-    def __init__(self, is_test: bool):
+    def __init__(self, is_test: bool, for_segmentation: bool):
         if self.env_name not in os.environ:
             raise Exception("Cant find dataset root path. Please set {} environment variable".format(self.env_name))
+
+        self._is_test = is_test
+        self._for_segmentation = for_segmentation
 
         root = os.environ[self.env_name]
 
         labels = np.genfromtxt(os.path.join(root, 'train-rle.csv'), delimiter=',', dtype=str)[1:]
-        self._is_test = is_test
         images_root = os.path.join(root, 'dicom-images-test' if is_test else 'dicom-images-train')
         items = self._parse_test_items(images_root) if is_test else self._parse_train_items(images_root, labels)
 
@@ -120,7 +123,7 @@ class AugmentedDataset:
         return len(self._dataset)
 
 
-class Augmentations:
+class SegmentationAugmentations:
     def __init__(self, is_train: bool, to_pytorch: bool):
         preprocess = Resize(height=DATA_HEIGHT, width=DATA_WIDTH)
         transforms = Compose([HorizontalFlip()], p=0.5)
@@ -144,15 +147,50 @@ class Augmentations:
             return {'data': augmented['image'], 'target': augmented['mask']}
 
 
-def create_dataset(is_test: bool, indices_path: str = None) -> 'BasicDataset':
+class ClassificationAugmentations:
+    def __init__(self, is_train: bool, to_pytorch: bool):
+        preprocess = Resize(height=DATA_HEIGHT, width=DATA_WIDTH)
+        transforms = Compose([HorizontalFlip()], p=0.5)
+
+        if is_train:
+            self._aug = Compose(
+                [preprocess, transforms, Rotate(limit=20)])
+        else:
+            self._aug = preprocess
+
+        self._need_to_pytorch = to_pytorch
+
+    def augmentate(self, data: {}):
+        augmented = self._aug(image=data['data'], mask=data['target'])
+        if self._need_to_pytorch:
+            img = np.stack([augmented['image']] * 3, axis=0)
+            image = img.astype(np.float32) / 128 - 1
+
+            mask = augmented['mask']
+            target = np.array([mask[mask > 0].size > 5], dtype=np.float32)
+            return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
+        else:
+            return {'data': augmented['image'], 'target': augmented['mask']}
+
+
+def create_dataset(is_test: bool, indices_path: str = None) -> 'Dataset':
     dataset = Dataset(is_test)
     if indices_path is not None:
         dataset.load_indices(indices_path, remove_unused=True)
     return dataset
 
 
-def create_augmented_dataset(is_train: bool, is_test: bool, to_pytorch: bool = True, indices_path: str = None) -> 'AugmentedDataset':
+def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, to_pytorch: bool = True,
+                                     indices_path: str = None) -> 'AugmentedDataset':
     dataset = create_dataset(is_test, indices_path)
-    augs = Augmentations(is_train, to_pytorch)
+    augs = SegmentationAugmentations(is_train, to_pytorch)
+
+    return AugmentedDataset(dataset).add_aug(augs.augmentate)
+
+
+def create_augmented_dataset_for_class(is_train: bool, is_test: bool, to_pytorch: bool = True,
+                                       indices_path: str = None) -> 'AugmentedDataset':
+    dataset = create_dataset(is_test, indices_path)
+    augs = ClassificationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)

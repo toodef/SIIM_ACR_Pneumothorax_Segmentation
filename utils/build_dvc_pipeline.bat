@@ -3,26 +3,64 @@ if [%1]==[] goto usage
 set EXP_DIR=%1
 
 dvc run -d prepare_dataset.py ^
-  -o data/indices/train_indices.npy ^
-  -o data/indices/val_indices.npy ^
+  -o data/indices/train_seg.npy -o data/indices/train_class.npy ^
+  -o data/indices/val_seg.npy -o data/indices/val_class.npy ^
+  -o data/indices/test_seg.npy -o data/indices/test_class.npy ^
   --no-exec python prepare_dataset.py
 
-dvc run -d train.py -m experiments/$EXP_DIR/monitors/metrics_log/metrics.json ^
-  -o experiments/%EXP_DIR%/monitors/metrics_log/metrics_log.json ^
-  -o experiments/%EXP_DIR%/checkpoints/last/last_checkpoint.zip ^
-  -o experiments/%EXP_DIR%/checkpoints/best/best_checkpoint.zip ^
-  -d data/indices/train_indices.npy ^
-  -d data/indices/val_indices.npy ^
-  --no-exec python src/train.py
+dvc run -d train.py ^
+  -o experiments/%EXP_DIR%/class/resnet18 -f resnet18class.dvc ^
+  -d data/indices/train.npy ^
+  -d data/indices/val.npy ^
+  --no-exec python train.py -m resnet18
 
-git add last_checkpoint.zip.dvc
+dvc run -d train.py ^
+  -o experiments/%EXP_DIR%/class/resnet34 -f resnet34class.dvc ^
+  -d data/indices/train.npy ^
+  -d data/indices/val.npy ^
+  --no-exec python train.py -m resnet34
 
-dvc run -d predict.py ^
-  -d experiments/%EXP_DIR%/checkpoints/last/last_checkpoint.zip ^
-  -d experiments/%EXP_DIR%/checkpoints/best/best_checkpoint.zip ^
-  --no-exec python predict.py
+dvc run -d predict_model_class.py ^
+  -d experiments/%EXP_DIR%/class/resnet18 ^
+  -o out/class/resnet18_class_out.csv ^
+  --no-exec python predict_model_class.py -m resnet18 -o out/class/resnet18_class_out.csv
 
-git add Dvcfile
+dvc run -d predict_model_class.py ^
+  -d experiments/%EXP_DIR%/class/resnet34 ^
+  -o out/class/resnet34_class_out.csv ^
+  --no-exec python predict_model_class.py -m resnet34 -o out/class/resnet34_class_out.csv
+
+dvc run -d get_class_best_predict.py ^
+  -o out/resnet18_class_out.csv ^
+  -o out/resnet34_class_out.csv ^
+  -d data/indices/test.npy ^
+  -o out/class/class_best_predict.csv ^
+  --no-exec python get_class_best_predict.py
+
+dvc run -d train.py ^
+  -o experiments/%EXP_DIR%/seg/resnet18 -f resnet18seg.dvc ^
+  -d data/indices/train.npy ^
+  -d data/indices/val.npy ^
+  --no-exec python train.py -m resnet18
+
+dvc run -d train.py ^
+  -o experiments/%EXP_DIR%/seg/resnet34 -f resnet34seg.dvc ^
+  -d data/indices/train.npy ^
+  -d data/indices/val.npy ^
+  --no-exec python train.py -m resnet34
+
+dvc run -d predict_model.py ^
+  -d experiments/%EXP_DIR%/seg/resnet18 ^
+  -d out/resnet18_class_out.csv ^
+  -o out/resnet18_out.csv ^
+  --no-exec python predict_model.py -m resnet18 -o out/resnet18_out.csv
+
+dvc run -d predict_model.py ^
+  -d experiments/%EXP_DIR%/seg/resnet34 ^
+  -o out/resnet34_out.csv ^
+  --no-exec python predict_model.py -m resnet34 -o out/resnet34_out.csv
+
+git add *.dvc
 
 :usage
 @echo "Usage: ./utils/build_dvc_pipeline.sh <experiment dir name>"
