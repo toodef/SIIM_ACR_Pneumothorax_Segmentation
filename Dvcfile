@@ -1,0 +1,10 @@
+cmd: python final_predict.py
+wdir: .
+deps:
+- path: final_predict.py
+- path: experiments/exp1/seg/resnet34
+outs:
+- path: out/seg/final_predict.csv
+  cache: true
+  metric: false
+  persist: false
