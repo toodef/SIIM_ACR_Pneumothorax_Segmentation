@@ -89,3 +89,4 @@ dvc run -d final_predict.py \
   --no-exec python final_predict.py
 
 git add *.dvc
+git add Dvcfile

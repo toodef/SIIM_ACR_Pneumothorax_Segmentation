@@ -83,6 +83,7 @@ dvc run -d final_predict.py ^
   --no-exec python final_predict.py
 
 git add *.dvc
+git add Dvcfile
 
 :usage
 @echo "Usage: ./utils/build_dvc_pipeline.sh <experiment dir name>"
