@@ -1,7 +1,7 @@
-cmd: python train.py -m resnet18
+cmd: python train_classifier.py -m resnet18
 wdir: .
 deps:
-- path: train.py
+- path: train_classifier.py
 - path: data/indices/train.npy
 - path: data/indices/val.npy
 outs:

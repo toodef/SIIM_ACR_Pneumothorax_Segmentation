@@ -1,7 +1,7 @@
-cmd: python train.py -m resnet34
+cmd: python train_segmentation.py -m resnet34
 wdir: .
 deps:
-- path: train.py
+- path: train_segmentation.py
 - path: data/indices/train.npy
 - path: data/indices/val.npy
 outs:
