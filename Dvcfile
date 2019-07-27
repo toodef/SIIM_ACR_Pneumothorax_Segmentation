@@ -2,7 +2,8 @@ cmd: python final_predict.py
 wdir: .
 deps:
 - path: final_predict.py
-- path: experiments/exp1/seg/resnet34
+- path: out/seg/seg_best_predict.json
+- path: out/class/class_predict.csv
 outs:
 - path: out/seg/final_predict.csv
   cache: true
