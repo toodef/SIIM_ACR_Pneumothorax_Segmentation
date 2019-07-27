@@ -1,0 +1,10 @@
+cmd: python predict_model_class.py -m resnet34 -o out/class/resnet34_class_out.csv
+wdir: .
+deps:
+- path: predict_model_class.py
+- path: experiments/exp1/class/resnet34
+outs:
+- path: out/class/resnet34_out.csv
+  cache: true
+  metric: false
+  persist: false

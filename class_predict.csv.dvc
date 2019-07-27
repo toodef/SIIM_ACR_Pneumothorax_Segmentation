@@ -1,0 +1,10 @@
+cmd: python class_eval.py
+wdir: .
+deps:
+- path: class_eval.py
+- path: out/class/class_best_predict.json
+outs:
+- path: out/class/class_predict.csv
+  cache: true
+  metric: false
+  persist: false
