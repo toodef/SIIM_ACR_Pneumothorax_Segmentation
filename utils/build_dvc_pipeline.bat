@@ -77,7 +77,8 @@ dvc run -d detect_seg_best_predict_config.py ^
 
 dvc run -d final_predict.py ^
   -f Dvcfile ^
-  -d experiments/%EXP_DIR%/seg/resnet34 ^
+  -d out/seg/seg_best_predict.json ^
+  -d out/class/class_predict.csv ^
   -o out/seg/final_predict.csv ^
   --no-exec python final_predict.py
 

@@ -9,42 +9,83 @@ fi
 EXP_DIR="$1"
 
 dvc run -d prepare_dataset.py \
-  -o data/indices/train.npy \
-  -o data/indices/val.npy \
+  -o data/indices/train_seg.npy -o data/indices/train_class.npy \
+  -o data/indices/val_seg.npy -o data/indices/val_class.npy \
+  -o data/indices/test_seg.npy -o data/indices/test_class.npy \
   --no-exec python prepare_dataset.py
 
 dvc run -d train.py \
-  -o experiments/$EXP_DIR/seg/resnet18 -f resnet18seg.dvc \
+  -o experiments/$EXP_DIR/class/resnet18 -f train_resnet18class.dvc \
   -d data/indices/train.npy \
   -d data/indices/val.npy \
   --no-exec python train.py -m resnet18
 
 dvc run -d train.py \
-  -o experiments/$EXP_DIR/seg/resnet34 -f resnet34seg.dvc \
+  -o experiments/$EXP_DIR/class/resnet34 -f train_resnet34class.dvc \
   -d data/indices/train.npy \
   -d data/indices/val.npy \
   --no-exec python train.py -m resnet34
 
+dvc run -d predict_model_class.py \
+  -f predict_resnet18class.dvc \
+  -d experiments/$EXP_DIR/class/resnet18 \
+  -o out/class/resnet18_out.csv \
+  --no-exec python predict_model_class.py -m resnet18 -o out/class/resnet18_class_out.csv
+
+dvc run -d predict_model_class.py \
+  -f predict_resnet34class.dvc \
+  -d experiments/$EXP_DIR/class/resnet34 \
+  -o out/class/resnet34_out.csv \
+  --no-exec python predict_model_class.py -m resnet34 -o out/class/resnet34_class_out.csv
+
+dvc run -d detect_class_best_predict_config.py \
+  -d out/class/resnet18_out.csv \
+  -d out/class/resnet34_out.csv \
+  -d data/indices/test.npy \
+  -o out/class/class_best_predict.json \
+  --no-exec python detect_class_best_predict_config.py
+
+dvc run -d class_eval.py \
+  -d out/class/class_best_predict.json \
+  -o out/class/class_predict.csv \
+  --no-exec python class_eval.py
+
 dvc run -d train.py \
-  -o experiments/$EXP_DIR/class/resnet18 -f resnet18class.dvc \
+  -o experiments/$EXP_DIR/seg/resnet18 -f train_resnet18seg.dvc \
   -d data/indices/train.npy \
   -d data/indices/val.npy \
   --no-exec python train.py -m resnet18
 
 dvc run -d train.py \
-  -o experiments/$EXP_DIR/class/resnet34 -f resnet34class.dvc \
+  -o experiments/$EXP_DIR/seg/resnet34 -f train_resnet34seg.dvc \
   -d data/indices/train.npy \
   -d data/indices/val.npy \
   --no-exec python train.py -m resnet34
 
-dvc run -d predict_model.py \
+dvc run -d predict_model_seg.py \
+  -f predict_resnet18seg.dvc \
   -d experiments/$EXP_DIR/seg/resnet18 \
-  -o out/resnet18_out.csv \
-  --no-exec python predict_model.py -m resnet18 -o out/resnet18_out.csv
+  -o out/seg/resnet18_out.csv \
+  --no-exec python predict_model_seg.py -m resnet18 -o out/resnet18_out.csv
 
-dvc run -d predict_model.py \
+dvc run -d predict_model_seg.py \
+  -f predict_resnet34seg.dvc \
   -d experiments/$EXP_DIR/seg/resnet34 \
-  -o out/resnet34_out.csv \
-  --no-exec python predict_model.py -m resnet34 -o out/resnet34_out.csv
+  -o out/seg/resnet34_out.csv \
+  --no-exec python predict_model_seg.py -m resnet34 -o out/resnet34_out.csv
+
+dvc run -d detect_seg_best_predict_config.py \
+  -d out/seg/resnet18_out.csv \
+  -d out/seg/resnet34_out.csv \
+  -d data/indices/test.npy \
+  -o out/seg/seg_best_predict.json \
+  --no-exec python detect_seg_best_predict_config.py
+
+dvc run -d final_predict.py \
+  -f Dvcfile \
+  -d out/seg/seg_best_predict.json \
+  -d out/class/class_predict.csv \
+  -o out/seg/final_predict.csv \
+  --no-exec python final_predict.py
 
 git add *.dvc
