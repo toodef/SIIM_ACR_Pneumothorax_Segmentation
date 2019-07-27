@@ -9,8 +9,10 @@ from neural_pipeline import Predictor, FileStructManager
 from tqdm import tqdm
 
 from train_config.dataset import create_dataset
-from train_config.train_config import BaseClassificationTrainConfig, ResNet18ClassificationTrainConfig,\
+from train_config.train_config import BaseClassificationTrainConfig, ResNet18ClassificationTrainConfig, \
     ResNet34ClassificationTrainConfig
+
+__all__ = ['predict']
 
 
 def predict(config_type: type(BaseClassificationTrainConfig), output_file: str):

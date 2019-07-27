@@ -34,8 +34,13 @@ dvc run -d get_class_best_predict.py ^
   -o out/resnet18_class_out.csv ^
   -o out/resnet34_class_out.csv ^
   -d data/indices/test.npy ^
-  -o out/class/class_best_predict.csv ^
+  -o out/class/class_best_predict.json ^
   --no-exec python get_class_best_predict.py
+
+dvc run -d class_eval.py ^
+  -d out/class/class_best_predict.json ^
+  -o out/class/class_predict.csv ^
+  --no-exec python class_eval.py
 
 dvc run -d train.py ^
   -o experiments/%EXP_DIR%/seg/resnet18 -f resnet18seg.dvc ^
