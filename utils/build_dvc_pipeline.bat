@@ -8,17 +8,17 @@ dvc run -d prepare_dataset.py ^
   -o data/indices/test_seg.npy -o data/indices/test_class.npy ^
   --no-exec python prepare_dataset.py
 
-dvc run -d train.py ^
+dvc run -d train_classifier.py ^
   -o experiments/%EXP_DIR%/class/resnet18 -f train_resnet18class.dvc ^
   -d data/indices/train.npy ^
   -d data/indices/val.npy ^
-  --no-exec python train.py -m resnet18
+  --no-exec python train_classifier.py -m resnet18
 
-dvc run -d train.py ^
+dvc run -d train_classifier.py ^
   -o experiments/%EXP_DIR%/class/resnet34 -f train_resnet34class.dvc ^
   -d data/indices/train.npy ^
   -d data/indices/val.npy ^
-  --no-exec python train.py -m resnet34
+  --no-exec python train_classifier.py -m resnet34
 
 dvc run -d predict_model_class.py ^
   -f predict_resnet18class.dvc ^
@@ -44,17 +44,17 @@ dvc run -d class_eval.py ^
   -o out/class/class_predict.csv ^
   --no-exec python class_eval.py
 
-dvc run -d train.py ^
+dvc run -d train_segmentation.py ^
   -o experiments/%EXP_DIR%/seg/resnet18 -f train_resnet18seg.dvc ^
   -d data/indices/train.npy ^
   -d data/indices/val.npy ^
-  --no-exec python train.py -m resnet18
+  --no-exec python train_segmentation.py -m resnet18
 
-dvc run -d train.py ^
+dvc run -d train_segmentation.py ^
   -o experiments/%EXP_DIR%/seg/resnet34 -f train_resnet34seg.dvc ^
   -d data/indices/train.npy ^
   -d data/indices/val.npy ^
-  --no-exec python train.py -m resnet34
+  --no-exec python train_segmentation.py -m resnet34
 
 dvc run -d predict_model_seg.py ^
   -f predict_resnet18seg.dvc ^
