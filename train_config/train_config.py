@@ -10,7 +10,7 @@ from cv_utils.models import ResNet18, ModelsWeightsStorage, ModelWithActivation,
 from cv_utils.models.decoders.unet import UNetDecoder
 from neural_pipeline import TrainConfig, DataProducer, TrainStage, ValidationStage
 from torch.optim import Adam
-from torch.nn import Module
+from torch.nn import Module, BCELoss
 
 from train_config.dataset import create_augmented_dataset_for_seg, create_augmented_dataset_for_class
 
@@ -113,7 +113,7 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.val_stage = ValidationStage(self._val_data_producer,
                                          ClassificationMetricsProcessor('validation', [0.4, 0.6, 0.8]))
 
-        loss = BCEDiceLoss(0.5, 0.5, reduction=Reduction('mean')).cuda()
+        loss = BCELoss().cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
