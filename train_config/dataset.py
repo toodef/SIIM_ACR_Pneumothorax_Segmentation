@@ -41,14 +41,18 @@ class Dataset(BasicDataset):
         ds = pydicom.dcmread(it[0])
         img = ds.pixel_array
         rles = it[1]
-        if type(rles) is list:
-            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
-            for rle in rles:
-                mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32) / 255
-            mask = mask.T
+
+        if self._for_segmentation:
+            if type(rles) is list:
+                mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
+                for rle in rles:
+                    mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32) / 255
+                mask = mask.T
+            else:
+                mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
+            return {'data': img, 'target': mask}
         else:
-            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
-        return {'data': img, 'target': mask}
+            return {'data': img, 'target': 0 if rles == -1 else 1}
 
     def _parse_train_items(self, images_root: str, labels: np.ndarray) -> []:
         images = self._parse_images(images_root)
@@ -67,9 +71,7 @@ class Dataset(BasicDataset):
 
         res = []
         for ident, rle in pairs.items():
-            if rle == ['-1']:
-                rle = -1
-            else:
+            if not (rle == ['-1']):
                 rle = [[int(v) for v in r.split(' ')] for r in rle]
             res.append([images[ident], rle])
 
