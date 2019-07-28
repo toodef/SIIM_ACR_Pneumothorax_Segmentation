@@ -7,10 +7,11 @@ import numpy as np
 from neural_pipeline import Trainer, FileStructManager
 from neural_pipeline.builtin.monitors.tensorboard import TensorboardMonitor
 
-from train_config.train_config import ResNet18TrainConfig, ResNet34TrainConfig, BaseTrainConfig
+from train_config.train_config import ResNet18SegmentationTrainConfig, ResNet34SegmentationTrainConfig,\
+    BaseSegmentationTrainConfig
 
 
-def train(config_type: type(BaseTrainConfig)):
+def train(config_type: type(BaseSegmentationTrainConfig)):
     fsm = FileStructManager(base_dir=config_type.experiment_dir, is_continue=False)
 
     config = config_type({'train': ['train.npy'], 'val': 'val.npy'})
@@ -40,8 +41,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.model == 'resnet18':
-        train(ResNet18TrainConfig)
+        train(ResNet18SegmentationTrainConfig)
     elif args.model == 'resnet34':
-        train(ResNet34TrainConfig)
+        train(ResNet34SegmentationTrainConfig)
     else:
         raise Exception("Train pipeline doesn't implemented for model '{}'".format(args.model))
