@@ -178,8 +178,8 @@ class ClassificationAugmentations:
             return {'data': augmented['image'], 'target': augmented['mask']}
 
 
-def create_dataset(is_test: bool, indices_path: str = None) -> 'Dataset':
-    dataset = Dataset(is_test)
+def create_dataset(is_test: bool, for_segmentation: bool, indices_path: str = None) -> 'Dataset':
+    dataset = Dataset(is_test, for_segmentation)
     if indices_path is not None:
         dataset.load_indices(indices_path, remove_unused=True)
     return dataset
@@ -187,7 +187,7 @@ def create_dataset(is_test: bool, indices_path: str = None) -> 'Dataset':
 
 def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, to_pytorch: bool = True,
                                      indices_path: str = None) -> 'AugmentedDataset':
-    dataset = create_dataset(is_test, indices_path)
+    dataset = create_dataset(is_test, True, indices_path)
     augs = SegmentationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)
@@ -195,7 +195,7 @@ def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, to_pytorch: 
 
 def create_augmented_dataset_for_class(is_train: bool, is_test: bool, to_pytorch: bool = True,
                                        indices_path: str = None) -> 'AugmentedDataset':
-    dataset = create_dataset(is_test, indices_path)
+    dataset = create_dataset(is_test, False, indices_path)
     augs = ClassificationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)

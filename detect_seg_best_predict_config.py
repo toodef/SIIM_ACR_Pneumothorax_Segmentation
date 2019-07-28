@@ -66,7 +66,7 @@ if __name__ == '__main__':
             all_predicts.append({'preds': unite_predicts([all_predicts[i]['preds'] for i in cmb]),
                                  'net': ','.join([all_predicts[i]['net'] for i in cmb])})
 
-    dataset = create_dataset(is_test=False, indices_path='data/out/test_class.npy')
+    dataset = create_dataset(is_test=False, for_segmentation=True, indices_path='data/out/test_class.npy')
 
     best_thresh, best_pred, best_metric = None, None, 0
     for pred in all_predicts:
