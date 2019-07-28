@@ -14,7 +14,8 @@ from torch.nn import Module
 
 from train_config.dataset import create_augmented_dataset_for_seg, create_augmented_dataset_for_class
 
-__all__ = ['BaseSegmentationTrainConfig', 'ResNet18SegmentationTrainConfig', 'ResNet34SegmentationTrainConfig']
+__all__ = ['BaseSegmentationTrainConfig', 'ResNet18SegmentationTrainConfig', 'ResNet34SegmentationTrainConfig',
+           'BaseClassificationTrainConfig', 'ResNet18ClassificationTrainConfig', 'ResNet34ClassificationTrainConfig']
 
 
 class BaseSegmentationTrainConfig(TrainConfig, metaclass=ABCMeta):

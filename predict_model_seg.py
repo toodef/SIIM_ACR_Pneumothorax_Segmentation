@@ -10,10 +10,11 @@ from neural_pipeline import Predictor, FileStructManager
 from tqdm import tqdm
 
 from train_config.dataset import create_dataset
-from train_config.train_config import BaseTrainConfig, ResNet18TrainConfig, ResNet34TrainConfig
+from train_config.train_config import BaseSegmentationTrainConfig, ResNet18SegmentationTrainConfig,\
+    ResNet34SegmentationTrainConfig
 
 
-def predict(config_type: BaseTrainConfig, output_file: str):
+def predict(config_type: type(BaseSegmentationTrainConfig), output_file: str):
     # dataset = create_dataset(is_test=False, indices_path='data/indices/train.npy')
     dataset = create_dataset(is_test=True, for_segmentation=True)
 
@@ -75,8 +76,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.model == 'resnet18':
-        predict(ResNet18TrainConfig, args.out)
+        predict(ResNet18SegmentationTrainConfig, args.out)
     elif args.model == 'resnet34':
-        predict(ResNet34TrainConfig, args.out)
+        predict(ResNet34SegmentationTrainConfig, args.out)
     else:
         raise Exception("Train pipeline doesn't implemented for model '{}'".format(args.model))
