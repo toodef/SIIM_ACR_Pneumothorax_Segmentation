@@ -71,7 +71,7 @@ class Dataset(BasicDataset):
 
         res = []
         for ident, rle in pairs.items():
-            if not rle == ['-1']:
+            if rle == ['-1']:
                 if not self._for_segmentation:
                     res.append([images[ident], -1])
             else:
