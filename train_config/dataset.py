@@ -166,16 +166,15 @@ class ClassificationAugmentations:
         self._need_to_pytorch = to_pytorch
 
     def augmentate(self, data: {}):
-        augmented = self._aug(image=data['data'], mask=data['target'])
+        augmented = self._aug(image=data['data'])
+        target = np.array(data['target'], dtype=np.float32)
         if self._need_to_pytorch:
             img = np.stack([augmented['image']] * 3, axis=0)
             image = img.astype(np.float32) / 128 - 1
 
-            mask = augmented['mask']
-            target = np.array([mask[mask > 0].size > 5], dtype=np.float32)
             return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
         else:
-            return {'data': augmented['image'], 'target': augmented['mask']}
+            return {'data': augmented['image'], 'target': target}
 
 
 def create_dataset(is_test: bool, for_segmentation: bool, indices_path: str = None) -> 'Dataset':
