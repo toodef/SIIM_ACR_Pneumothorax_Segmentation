@@ -14,7 +14,7 @@ from train_config.train_config import ResNet18SegmentationTrainConfig, ResNet34S
 def train(config_type: type(BaseSegmentationTrainConfig)):
     fsm = FileStructManager(base_dir=config_type.experiment_dir, is_continue=False)
 
-    config = config_type({'train': ['train.npy'], 'val': 'val.npy'})
+    config = config_type({'train': ['train_seg.npy'], 'val': 'val_seg.npy'})
 
     trainer = Trainer(config, fsm, device=torch.device('cuda'))
     tensorboard = TensorboardMonitor(fsm, is_continue=False)

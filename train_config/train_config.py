@@ -29,9 +29,11 @@ class BaseSegmentationTrainConfig(TrainConfig, metaclass=ABCMeta):
 
         train_dts = []
         for indices in fold_indices['train']:
-            train_dts.append(create_augmented_dataset_for_seg(is_train=True, is_test=False, indices_path=os.path.join(dir, indices)))
+            train_dts.append(create_augmented_dataset_for_seg(is_train=True, is_test=False,
+                                                              indices_path=os.path.join(dir, indices)))
 
-        val_dts = create_augmented_dataset_for_seg(is_train=False, is_test=False, indices_path=os.path.join(dir, fold_indices['val']))
+        val_dts = create_augmented_dataset_for_seg(is_train=False, is_test=False,
+                                                   indices_path=os.path.join(dir, fold_indices['val']))
 
         self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=12). \
             global_shuffle(True).pin_memory(True)
@@ -94,9 +96,11 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
 
         train_dts = []
         for indices in fold_indices['train']:
-            train_dts.append(create_augmented_dataset_for_class(is_train=True, is_test=False, indices_path=os.path.join(dir, indices)))
+            train_dts.append(create_augmented_dataset_for_class(is_train=True, is_test=False,
+                                                                indices_path=os.path.join(dir, indices)))
 
-        val_dts = create_augmented_dataset_for_class(is_train=False, is_test=False, indices_path=os.path.join(dir, fold_indices['val']))
+        val_dts = create_augmented_dataset_for_class(is_train=False, is_test=False,
+                                                     indices_path=os.path.join(dir, fold_indices['val']))
 
         self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=12). \
             global_shuffle(True).pin_memory(True)
