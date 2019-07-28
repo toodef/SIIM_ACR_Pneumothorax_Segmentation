@@ -5,12 +5,8 @@ from cv_utils.datasets.common import BasicDataset
 from train_config.dataset import Dataset
 
 
-def stratificate_dataset(dataset: BasicDataset, parts: [], for_segmentation: bool) -> []:
-    if for_segmentation:
-        all_indices = [i for i, d in enumerate(dataset) if d['target'] > 0]
-    else:
-        all_indices = list(range(len(dataset)))
-
+def stratificate_dataset(dataset: BasicDataset, parts: []) -> []:
+    all_indices = list(range(len(dataset)))
     indices_num = len(all_indices)
 
     res = []
@@ -30,7 +26,7 @@ def check_indices_for_intersection(indices: []):
 
 
 def generate_indices(dataset, for_segmentation) -> None:
-    train_indices, val_indices, test_indices = stratificate_dataset(dataset, [0.7, 0.2, 0.1], for_segmentation)
+    train_indices, val_indices, test_indices = stratificate_dataset(dataset, [0.7, 0.2, 0.1])
 
     dir = os.path.join('data', 'indices')
     if not os.path.exists(dir) and not os.path.isdir(dir):
@@ -53,7 +49,7 @@ def generate_indices(dataset, for_segmentation) -> None:
 
 if __name__ == '__main__':
     dataset_args = {'is_test': False, 'for_segmentation': False}
-    dataset = Dataset(**dataset_args)
+    generate_indices(Dataset(**dataset_args), for_segmentation=False)
 
-    generate_indices(dataset, for_segmentation=False)
-    generate_indices(dataset, for_segmentation=True)
+    dataset_args = {'is_test': False, 'for_segmentation': True}
+    generate_indices(Dataset(**dataset_args), for_segmentation=True)
