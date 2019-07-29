@@ -21,7 +21,7 @@ def train(config_type: type(BaseClassificationTrainConfig)):
     trainer.monitor_hub.add_monitor(tensorboard)
 
     trainer.set_epoch_num(300)
-    trainer.enable_lr_decaying(coeff=0.5, patience=10, target_val_clbk=lambda: np.mean(config.val_stage.get_losses()))
+    trainer.enable_lr_decaying(coeff=0.5, patience=5, target_val_clbk=lambda: np.mean(config.val_stage.get_losses()))
     trainer.add_on_epoch_end_callback(lambda: tensorboard.update_scalar('params/lr', trainer.data_processor().get_lr()))
     trainer.enable_best_states_saving(lambda: np.mean(config.val_stage.get_losses()))
     trainer.add_stop_rule(lambda: trainer.data_processor().get_lr() < 1e-6)
