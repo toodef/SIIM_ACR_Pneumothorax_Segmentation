@@ -6,11 +6,12 @@ from cv_utils.losses.common import Reduction
 from cv_utils.losses.segmentation import BCEDiceLoss
 from cv_utils.metrics.torch.classification import ClassificationMetricsProcessor
 from cv_utils.metrics.torch.segmentation import SegmentationMetricsProcessor
-from cv_utils.models import ResNet18, ModelsWeightsStorage, ModelWithActivation, ResNet34
+from cv_utils.models import ResNet18, ModelsWeightsStorage, ModelWithActivation, ResNet34, ClassificationModel
 from cv_utils.models.decoders.unet import UNetDecoder
 from neural_pipeline import TrainConfig, DataProducer, TrainStage, ValidationStage
+from torch import nn
 from torch.optim import Adam
-from torch.nn import Module, BCELoss
+from torch.nn import Module, BCEWithLogitsLoss
 
 from train_config.dataset import create_augmented_dataset_for_seg, create_augmented_dataset_for_class
 
@@ -21,7 +22,7 @@ __all__ = ['BaseSegmentationTrainConfig', 'ResNet18SegmentationTrainConfig', 'Re
 class BaseSegmentationTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
-    batch_size = 6
+    batch_size = 2
 
     def __init__(self, fold_indices: {}):
         model = self.create_model().cuda()
@@ -36,9 +37,9 @@ class BaseSegmentationTrainConfig(TrainConfig, metaclass=ABCMeta):
         val_dts = create_augmented_dataset_for_seg(is_train=False, is_test=False,
                                                    indices_path=os.path.join(dir, fold_indices['val']))
 
-        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=12). \
+        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=6). \
             global_shuffle(True).pin_memory(True)
-        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=12). \
+        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=6). \
             global_shuffle(True).pin_memory(True)
 
         self.train_stage = TrainStage(self._train_data_producer, SegmentationMetricsProcessor('train'))
@@ -88,7 +89,7 @@ class ResNet34SegmentationTrainConfig(BaseSegmentationTrainConfig):
 class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
-    batch_size = 6
+    batch_size = 2
 
     def __init__(self, fold_indices: {}):
         model = self.create_model().cuda()
@@ -103,9 +104,9 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         val_dts = create_augmented_dataset_for_class(is_train=False, is_test=False,
                                                      indices_path=os.path.join(dir, fold_indices['val']))
 
-        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=12). \
+        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=6). \
             global_shuffle(True).pin_memory(True)
-        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=12). \
+        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=6). \
             global_shuffle(True).pin_memory(True)
 
         self.train_stage = TrainStage(self._train_data_producer,
@@ -113,7 +114,7 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.val_stage = ValidationStage(self._val_data_producer,
                                          ClassificationMetricsProcessor('validation', [0.4, 0.6, 0.8]))
 
-        loss = BCELoss().cuda()
+        loss = BCEWithLogitsLoss().cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
@@ -135,7 +136,8 @@ class ResNet18ClassificationTrainConfig(BaseClassificationTrainConfig):
         """
         enc = ResNet18(in_channels=3)
         ModelsWeightsStorage().load(enc, 'imagenet')
-        return ModelWithActivation(enc, activation='sigmoid')
+        model = ClassificationModel(enc, in_features=115200, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
+        return ModelWithActivation(model, activation='sigmoid')
 
 
 class ResNet34ClassificationTrainConfig(BaseClassificationTrainConfig):
@@ -149,4 +151,5 @@ class ResNet34ClassificationTrainConfig(BaseClassificationTrainConfig):
         """
         enc = ResNet34(in_channels=3)
         ModelsWeightsStorage().load(enc, 'imagenet')
-        return ModelWithActivation(enc, activation='sigmoid')
+        model = ClassificationModel(enc, in_features=115200, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
+        return ModelWithActivation(model, activation='sigmoid')

@@ -172,7 +172,7 @@ class ClassificationAugmentations:
             img = np.stack([augmented['image']] * 3, axis=0)
             image = img.astype(np.float32) / 128 - 1
 
-            return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
+            return {'data': torch.from_numpy(image), 'target': torch.from_numpy(np.expand_dims(target, axis=0))}
         else:
             return {'data': augmented['image'], 'target': target}
 
