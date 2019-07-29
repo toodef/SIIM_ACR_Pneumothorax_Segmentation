@@ -7,7 +7,8 @@ from pydicom.data import get_testdata_files
 
 import numpy as np
 import torch
-from albumentations import Compose, HorizontalFlip, Resize, Rotate
+from albumentations import Compose, HorizontalFlip, Resize, Rotate, OneOf, RandomContrast, RandomGamma, RandomBrightness, \
+    ElasticTransform, GridDistortion, OpticalDistortion, RandomSizedCrop, RandomCrop, RandomBrightnessContrast
 from cv_utils.datasets.common import BasicDataset
 
 __all__ = ['Dataset', 'AugmentedDataset', 'create_dataset', 'create_augmented_dataset_for_seg',
@@ -155,12 +156,24 @@ class SegmentationAugmentations:
 
 class ClassificationAugmentations:
     def __init__(self, is_train: bool, to_pytorch: bool):
-        preprocess = Resize(height=DATA_HEIGHT, width=DATA_WIDTH)
-        transforms = Compose([HorizontalFlip()], p=0.5)
+        preprocess = OneOf([Resize(height=DATA_HEIGHT, width=DATA_WIDTH),
+                            Compose([Resize(height=int(DATA_HEIGHT * 1.2), width=int(DATA_WIDTH * 1.2)),
+                                     RandomCrop(height=DATA_HEIGHT, width=DATA_WIDTH)])], p=1)
 
         if is_train:
-            self._aug = Compose(
-                [preprocess, transforms, Rotate(limit=20)])
+            self._aug = Compose([preprocess,
+                                 HorizontalFlip(p=0.5),
+                                 OneOf([
+                                     RandomBrightnessContrast(),
+                                     RandomGamma(),
+                                 ], p=0.3),
+                                 OneOf([
+                                     ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
+                                     GridDistortion(),
+                                     OpticalDistortion(distort_limit=2, shift_limit=0.5),
+                                 ], p=0.3),
+                                 Rotate(limit=20),
+                                 ], p=1)
         else:
             self._aug = preprocess
 
