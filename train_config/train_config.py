@@ -67,7 +67,7 @@ class ResNet18SegmentationTrainConfig(BaseSegmentationTrainConfig):
         It is better to init model by separated method
         :return:
         """
-        enc = ResNet18(in_channels=3)
+        enc = ResNet18(in_channels=1)
         ModelsWeightsStorage().load(enc, 'imagenet')
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
@@ -82,7 +82,7 @@ class ResNet34SegmentationTrainConfig(BaseSegmentationTrainConfig):
         It is better to init model by separated method
         :return:
         """
-        enc = ResNet34(in_channels=3)
+        enc = ResNet34(in_channels=1)
         ModelsWeightsStorage().load(enc, 'imagenet')
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
@@ -112,11 +112,11 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
             global_shuffle(True).pin_memory(True).drop_last(True)
 
         self.train_stage = TrainStage(self._train_data_producer,
-                                      ClassificationMetricsProcessor('train', [0.4, 0.6, 0.8]))
+                                      ClassificationMetricsProcessor('train', [0.5, 0.7, 0.9]))
         self.val_stage = ValidationStage(self._val_data_producer,
-                                         ClassificationMetricsProcessor('validation', [0.4, 0.6, 0.8]))
+                                         ClassificationMetricsProcessor('validation', [0.5, 0.7, 0.9]))
 
-        loss = BCELoss(reduction='sum').cuda()
+        loss = BCELoss(weight=torch.Tensor([[0.286, 1]] * self.batch_size), reduction='sum').cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
@@ -136,9 +136,9 @@ class ResNet18ClassificationTrainConfig(BaseClassificationTrainConfig):
         It is better to init model by separated method
         :return:
         """
-        enc = ResNet18(in_channels=3)
-        ModelsWeightsStorage().load(enc, 'imagenet')
-        model = ClassificationModel(enc, in_features=115200, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
+        enc = ResNet18(in_channels=1)
+        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')
 
 
@@ -151,7 +151,7 @@ class ResNet34ClassificationTrainConfig(BaseClassificationTrainConfig):
         It is better to init model by separated method
         :return:
         """
-        enc = ResNet34(in_channels=3)
-        ModelsWeightsStorage().load(enc, 'imagenet')
-        model = ClassificationModel(enc, in_features=115200, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
+        enc = ResNet34(in_channels=1)
+        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')

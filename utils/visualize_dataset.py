@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 from cv_utils.viz import ColormapVisualizer
 
-from train_config.dataset import create_augmented_dataset
+from train_config.dataset import create_augmented_dataset_for_seg
 
 
 if __name__ == '__main__':
-    dataset = create_augmented_dataset(is_train=True, is_test=False, to_pytorch=False)
+    dataset = create_augmented_dataset_for_seg(is_train=True, is_test=False, to_pytorch=False, include_negatives=False)
     vis = ColormapVisualizer([0.5, 0.5])
     for img_idx, d in enumerate(dataset):
         if d['target'].max() > 0:

@@ -16,7 +16,7 @@ __all__ = ['predict']
 
 
 def predict(config_type: type(BaseClassificationTrainConfig), output_file: str):
-    dataset = create_dataset(is_test=True, for_segmentation=False, include_negatives=True, indices_path='data/indices/test_class.npy')
+    dataset = create_dataset(is_test=True, include_negatives=True, indices_path='data/indices/test_class.npy')
 
     output_dir = os.path.dirname(output_file)
     if not os.path.exists(output_dir) and not os.path.isdir(output_dir):
@@ -31,7 +31,7 @@ def predict(config_type: type(BaseClassificationTrainConfig), output_file: str):
 
         images_paths = dataset.get_items()
         for i, data in enumerate(tqdm(dataset)):
-            data = cv2.resize(data, (512, 512))
+            data = cv2.resize(data['data'], (512, 512))
             img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
             res = np.squeeze(predictor.predict({'data': img_tensor}).data.cpu().numpy())
 

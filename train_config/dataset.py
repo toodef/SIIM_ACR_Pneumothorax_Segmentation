@@ -20,12 +20,11 @@ DATA_HEIGHT, DATA_WIDTH = 512, 512
 class Dataset(BasicDataset):
     env_name = 'SIIM_ACR_PNEUMOTORAX_SEGMENTATION_DATASET'  # name of environment with path to dataset
 
-    def __init__(self, is_test: bool, for_segmentation: bool, include_negatives: bool):
+    def __init__(self, is_test: bool, include_negatives: bool):
         if self.env_name not in os.environ:
             raise Exception("Cant find dataset root path. Please set {} environment variable".format(self.env_name))
 
         self._is_test = is_test
-        self._for_segmentation = for_segmentation
         self._include_negatives = include_negatives
 
         root = os.environ[self.env_name]
@@ -44,17 +43,14 @@ class Dataset(BasicDataset):
         img = ds.pixel_array
         rles = it[1]
 
-        if self._for_segmentation:
-            if type(rles) is list:
-                mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
-                for rle in rles:
-                    mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32) / 255
-                mask = mask.T
-            else:
-                mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
-            return {'data': img, 'target': mask}
+        if type(rles) is list:
+            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
+            for rle in rles:
+                mask += rle2mask(rle, img.shape[0], img.shape[1]).astype(np.float32) / 255
+            mask = mask.T
         else:
-            return {'data': img, 'target': 0 if rles == -1 else 1}
+            mask = np.zeros((img.shape[0], img.shape[1]), dtype=np.float32)
+        return {'data': img, 'target': mask}
 
     def _parse_train_items(self, images_root: str, labels: np.ndarray) -> []:
         images = self._parse_images(images_root)
@@ -132,12 +128,24 @@ class AugmentedDataset:
 
 class SegmentationAugmentations:
     def __init__(self, is_train: bool, to_pytorch: bool):
-        preprocess = Resize(height=DATA_HEIGHT, width=DATA_WIDTH)
-        transforms = Compose([HorizontalFlip()], p=0.5)
+        preprocess = OneOf([Resize(height=DATA_HEIGHT, width=DATA_WIDTH),
+                            Compose([Resize(height=int(DATA_HEIGHT * 1.2), width=int(DATA_WIDTH * 1.2)),
+                                     RandomCrop(height=DATA_HEIGHT, width=DATA_WIDTH)])], p=1)
 
         if is_train:
-            self._aug = Compose(
-                [preprocess, transforms, Rotate(limit=20)])
+            self._aug = Compose([preprocess,
+                                 HorizontalFlip(p=0.5),
+                                 OneOf([
+                                     RandomBrightnessContrast(),
+                                     RandomGamma(),
+                                 ], p=0.3),
+                                 OneOf([
+                                     ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
+                                     GridDistortion(),
+                                     OpticalDistortion(distort_limit=2, shift_limit=0.5),
+                                 ], p=0.3),
+                                 Rotate(limit=20),
+                                 ], p=1)
         else:
             self._aug = preprocess
 
@@ -146,7 +154,7 @@ class SegmentationAugmentations:
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'], mask=data['target'])
         if self._need_to_pytorch:
-            img = np.stack([augmented['image']] * 3, axis=0)
+            img = np.expand_dims(augmented['image'], axis=0)
             image = img.astype(np.float32) / 128 - 1
             target = np.expand_dims(augmented['mask'], 0)
             return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
@@ -181,19 +189,19 @@ class ClassificationAugmentations:
 
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'])
-        target = np.array([data['target']], dtype=np.float32)
+        target = np.zeros((2,), dtype=np.float32)
+        target[int(np.count_nonzero(data['target']) > 5)] = 1
+        # target = np.array([np.count_nonzero(data['target']) > 5], dtype=np.float32)
         if self._need_to_pytorch:
-            img = np.stack([augmented['image']] * 3, axis=0)
+            img = np.expand_dims(augmented['image'], axis=0)
             image = img.astype(np.float32) / 128 - 1
-
             return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
         else:
             return {'data': augmented['image'], 'target': target}
 
 
-def create_dataset(is_test: bool, for_segmentation: bool, include_negatives: bool,
-                   indices_path: str = None) -> 'Dataset':
-    dataset = Dataset(is_test, for_segmentation=for_segmentation, include_negatives=include_negatives)
+def create_dataset(is_test: bool, include_negatives: bool, indices_path: str = None) -> 'Dataset':
+    dataset = Dataset(is_test, include_negatives=include_negatives)
     if indices_path is not None:
         dataset.load_indices(indices_path, remove_unused=True)
     return dataset
@@ -201,7 +209,7 @@ def create_dataset(is_test: bool, for_segmentation: bool, include_negatives: boo
 
 def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, include_negatives: bool, to_pytorch: bool = True,
                                      indices_path: str = None) -> 'AugmentedDataset':
-    dataset = create_dataset(is_test, True, include_negatives, indices_path)
+    dataset = create_dataset(is_test, include_negatives, indices_path)
     augs = SegmentationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)
@@ -209,7 +217,7 @@ def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, include_nega
 
 def create_augmented_dataset_for_class(is_train: bool, is_test: bool, to_pytorch: bool = True,
                                        indices_path: str = None) -> 'AugmentedDataset':
-    dataset = create_dataset(is_test, False, True, indices_path)
+    dataset = create_dataset(is_test, True, indices_path)
     augs = ClassificationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)
