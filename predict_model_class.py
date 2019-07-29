@@ -16,7 +16,7 @@ __all__ = ['predict']
 
 
 def predict(config_type: type(BaseClassificationTrainConfig), output_file: str):
-    dataset = create_dataset(is_test=True, for_segmentation=False)
+    dataset = create_dataset(is_test=True, for_segmentation=False, include_negatives=True, indices_path='data/indices/test_class.npy')
 
     output_dir = os.path.dirname(output_file)
     if not os.path.exists(output_dir) and not os.path.isdir(output_dir):

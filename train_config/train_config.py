@@ -32,10 +32,12 @@ class BaseSegmentationTrainConfig(TrainConfig, metaclass=ABCMeta):
         train_dts = []
         for indices in fold_indices['train']:
             train_dts.append(create_augmented_dataset_for_seg(is_train=True, is_test=False,
-                                                              indices_path=os.path.join(dir, indices)))
+                                                              indices_path=os.path.join(dir, indices),
+                                                              include_negatives=False))
 
         val_dts = create_augmented_dataset_for_seg(is_train=False, is_test=False,
-                                                   indices_path=os.path.join(dir, fold_indices['val']))
+                                                   indices_path=os.path.join(dir, fold_indices['val']),
+                                                   include_negatives=False)
 
         self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=6). \
             global_shuffle(True).pin_memory(True)

@@ -19,12 +19,13 @@ DATA_HEIGHT, DATA_WIDTH = 512, 512
 class Dataset(BasicDataset):
     env_name = 'SIIM_ACR_PNEUMOTORAX_SEGMENTATION_DATASET'  # name of environment with path to dataset
 
-    def __init__(self, is_test: bool, for_segmentation: bool):
+    def __init__(self, is_test: bool, for_segmentation: bool, include_negatives: bool):
         if self.env_name not in os.environ:
             raise Exception("Cant find dataset root path. Please set {} environment variable".format(self.env_name))
 
         self._is_test = is_test
         self._for_segmentation = for_segmentation
+        self._include_negatives = include_negatives
 
         root = os.environ[self.env_name]
 
@@ -72,7 +73,7 @@ class Dataset(BasicDataset):
         res = []
         for ident, rle in pairs.items():
             if rle == ['-1']:
-                if not self._for_segmentation:
+                if self._include_negatives:
                     res.append([images[ident], -1])
             else:
                 rle = [[int(v) for v in r.split(' ')] for r in rle]
@@ -177,16 +178,17 @@ class ClassificationAugmentations:
             return {'data': augmented['image'], 'target': target}
 
 
-def create_dataset(is_test: bool, for_segmentation: bool, indices_path: str = None) -> 'Dataset':
-    dataset = Dataset(is_test, for_segmentation)
+def create_dataset(is_test: bool, for_segmentation: bool, include_negatives: bool,
+                   indices_path: str = None) -> 'Dataset':
+    dataset = Dataset(is_test, for_segmentation=for_segmentation, include_negatives=include_negatives)
     if indices_path is not None:
         dataset.load_indices(indices_path, remove_unused=True)
     return dataset
 
 
-def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, to_pytorch: bool = True,
+def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, include_negatives: bool, to_pytorch: bool = True,
                                      indices_path: str = None) -> 'AugmentedDataset':
-    dataset = create_dataset(is_test, True, indices_path)
+    dataset = create_dataset(is_test, True, include_negatives, indices_path)
     augs = SegmentationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)
@@ -194,7 +196,7 @@ def create_augmented_dataset_for_seg(is_train: bool, is_test: bool, to_pytorch: 
 
 def create_augmented_dataset_for_class(is_train: bool, is_test: bool, to_pytorch: bool = True,
                                        indices_path: str = None) -> 'AugmentedDataset':
-    dataset = create_dataset(is_test, False, indices_path)
+    dataset = create_dataset(is_test, False, True, indices_path)
     augs = ClassificationAugmentations(is_train, to_pytorch)
 
     return AugmentedDataset(dataset).add_aug(augs.augmentate)

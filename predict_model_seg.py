@@ -16,7 +16,7 @@ from train_config.train_config import BaseSegmentationTrainConfig, ResNet18Segme
 
 def predict(config_type: type(BaseSegmentationTrainConfig), output_file: str):
     # dataset = create_dataset(is_test=False, indices_path='data/indices/train.npy')
-    dataset = create_dataset(is_test=True, for_segmentation=True)
+    dataset = create_dataset(is_test=True, for_segmentation=True, include_negatives=False, indices_path='data/indices/test_seg.npy')
 
     output_dir = os.path.dirname(output_file)
     if not os.path.exists(output_dir) and not os.path.isdir(output_dir):
