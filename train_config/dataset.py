@@ -167,7 +167,7 @@ class ClassificationAugmentations:
 
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'])
-        target = np.array(data['target'], dtype=np.float32)
+        target = np.array([data['target']], dtype=np.float32)
         if self._need_to_pytorch:
             img = np.stack([augmented['image']] * 3, axis=0)
             image = img.astype(np.float32) / 128 - 1
