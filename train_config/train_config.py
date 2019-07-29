@@ -105,9 +105,9 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
                                                      indices_path=os.path.join(dir, fold_indices['val']))
 
         self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=6). \
-            global_shuffle(True).pin_memory(True)
+            global_shuffle(True).pin_memory(True).drop_last(True)
         self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=6). \
-            global_shuffle(True).pin_memory(True)
+            global_shuffle(True).pin_memory(True).drop_last(True)
 
         self.train_stage = TrainStage(self._train_data_producer,
                                       ClassificationMetricsProcessor('train', [0.4, 0.6, 0.8]))
