@@ -87,7 +87,7 @@ class ResNet34SegmentationTrainConfig(BaseSegmentationTrainConfig):
 
 
 class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
-    experiment_name = 'exp1'
+    experiment_name = 'exp2'
     experiment_dir = os.path.join('experiments', experiment_name)
     batch_size = 2
 
@@ -114,7 +114,7 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.val_stage = ValidationStage(self._val_data_producer,
                                          ClassificationMetricsProcessor('validation', [0.4, 0.6, 0.8]))
 
-        loss = BCELoss().cuda()
+        loss = BCELoss(weight=torch.Tensor([[2]] * self.batch_size), reduction='sum').cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
