@@ -79,8 +79,8 @@ def generate_indices(dataset, for_segmentation) -> None:
 
 
 if __name__ == '__main__':
-    dataset_args = {'is_test': False, 'for_segmentation': True, 'include_negatives': True}
+    dataset_args = {'is_test': False, 'include_negatives': True}
     generate_indices(Dataset(**dataset_args), for_segmentation=False)
 
-    dataset_args = {'is_test': False, 'for_segmentation': True, 'include_negatives': False}
+    dataset_args = {'is_test': False, 'include_negatives': False}
     generate_indices(Dataset(**dataset_args), for_segmentation=True)
