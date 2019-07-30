@@ -2,10 +2,15 @@ cmd: python train_classifier.py -m resnet18
 wdir: .
 deps:
 - path: train_classifier.py
+  md5: 904d1470198be1e8026b00990bb3b58f
 - path: data/indices/train_class.npy
+  md5: 99c05f6f2fb90d1d7abe1ff84fc31cba
 - path: data/indices/val_class.npy
+  md5: 4989d00ba78c0158d3b87901ca444ad8
 outs:
 - path: experiments/exp1/class/resnet18
   cache: true
   metric: false
   persist: false
+  md5: 1e4c2c47d3db68f333e1a7def8a70329.dir
+md5: 7e4b198abd240c1da9e3b2703503106c
