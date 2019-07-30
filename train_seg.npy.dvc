@@ -2,28 +2,36 @@ cmd: python prepare_dataset.py
 wdir: .
 deps:
 - path: prepare_dataset.py
+  md5: 1fe299f083dda076de851819d2d5ab43
 outs:
 - path: data/indices/train_seg.npy
   cache: true
   metric: false
   persist: false
+  md5: 611a0fe4d53f0f9fc41890b88d490a11
 - path: data/indices/train_class.npy
   cache: true
   metric: false
   persist: false
+  md5: ef32bc186346477965cddaa99b0ed50b
 - path: data/indices/val_seg.npy
   cache: true
   metric: false
   persist: false
+  md5: 3f1dce5a73e972087b695a84d3bba234
 - path: data/indices/val_class.npy
   cache: true
   metric: false
   persist: false
+  md5: 497f0c49a481200b1efdd545205339e4
 - path: data/indices/test_seg.npy
   cache: true
   metric: false
   persist: false
+  md5: 2dd8fc331c580d30b451f49620662de7
 - path: data/indices/test_class.npy
   cache: true
   metric: false
   persist: false
+  md5: 5f140dbfb0c22d3ef46abc82f46cc5f5
+md5: a555927332a3ebdb82755dad2de90e13

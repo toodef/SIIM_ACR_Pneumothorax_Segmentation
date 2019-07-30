@@ -1,0 +1,6 @@
+['remote "local"']
+url = /home/toodef/.dvc_cache/pneumo
+[core]
+remote = gpu_server
+['remote "gpu_server"']
+url = ssh://toodef@192.168.1.100/home/toodef/.dvc_cache/pneumo
