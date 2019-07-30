@@ -122,8 +122,8 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.train_stage = TrainStage(self._train_data_producer, train_class_metric_proc)
         self.val_stage = ValidationStage(self._val_data_producer,validation_class_metric_proc)
 
-        loss = BCELoss(weight=torch.Tensor([[0.286, 1]] * self.batch_size), reduction='sum').cuda()
-        optimizer = Adam(params=model.parameters(), lr=4e-4)
+        loss = BCELoss(weight=torch.Tensor([[0.286, 1]] * self.batch_size)).cuda()
+        optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
 
