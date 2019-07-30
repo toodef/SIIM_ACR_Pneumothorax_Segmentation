@@ -6,7 +6,7 @@ from cv_utils.losses.common import Reduction
 from cv_utils.losses.segmentation import BCEDiceLoss
 from cv_utils.metrics.torch.classification import ClassificationMetricsProcessor
 from cv_utils.metrics.torch.segmentation import SegmentationMetricsProcessor
-from cv_utils.models import ResNet18, ModelsWeightsStorage, ModelWithActivation, ResNet34, ClassificationModel
+from cv_utils.models import ResNet18, ModelsWeightsStorage, ModelWithActivation, ResNet34, ClassificationModel, InceptionV3Encoder
 from cv_utils.models.decoders.unet import UNetDecoder
 from neural_pipeline import TrainConfig, DataProducer, TrainStage, ValidationStage
 from torch import nn
@@ -160,4 +160,19 @@ class ResNet34ClassificationTrainConfig(BaseClassificationTrainConfig):
         enc = ResNet34(in_channels=1)
         ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
+        return ModelWithActivation(model, activation='sigmoid')
+
+
+class InceptionV3ClassificationTrainConfig(BaseClassificationTrainConfig):
+    experiment_dir = os.path.join(BaseClassificationTrainConfig.experiment_dir, 'class', 'inceptionv3')
+
+    @staticmethod
+    def create_model() -> Module:
+        """
+        It is better to init model by separated method
+        :return:
+        """
+        enc = InceptionV3Encoder(input_channels=1)
+        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        model = ClassificationModel(enc, in_features=460800, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')

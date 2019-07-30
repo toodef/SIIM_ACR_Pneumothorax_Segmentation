@@ -8,7 +8,7 @@ from neural_pipeline import Trainer, FileStructManager
 from neural_pipeline.builtin.monitors.tensorboard import TensorboardMonitor
 
 from train_config.train_config import ResNet18ClassificationTrainConfig, ResNet34ClassificationTrainConfig,\
-    BaseClassificationTrainConfig
+    BaseClassificationTrainConfig, InceptionV3ClassificationTrainConfig
 
 
 def train(config_type: type(BaseClassificationTrainConfig)):
@@ -32,7 +32,7 @@ def train(config_type: type(BaseClassificationTrainConfig)):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train')
     parser.add_argument('-m', '--model', type=str, help='Train one model', required=True,
-                        choices=['resnet18', 'resnet34'])
+                        choices=['resnet18', 'resnet34', 'inceptionv3'])
 
     if len(sys.argv) < 2:
         print('Bad arguments passed', file=sys.stderr)
@@ -44,5 +44,7 @@ if __name__ == "__main__":
         train(ResNet18ClassificationTrainConfig)
     elif args.model == 'resnet34':
         train(ResNet34ClassificationTrainConfig)
+    elif args.model == 'inceptionv3':
+        train(InceptionV3ClassificationTrainConfig)
     else:
         raise Exception("Train pipeline doesn't implemented for model '{}'".format(args.model))
