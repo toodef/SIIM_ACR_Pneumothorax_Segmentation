@@ -15,6 +15,7 @@ from torch.nn import Module, BCEWithLogitsLoss, BCELoss
 import numpy as np
 
 from train_config.dataset import create_augmented_dataset_for_seg, create_augmented_dataset_for_class
+from train_config.focal_loss import FocalLoss
 
 __all__ = ['BaseSegmentationTrainConfig', 'ResNet18SegmentationTrainConfig', 'ResNet34SegmentationTrainConfig',
            'BaseClassificationTrainConfig', 'ResNet18ClassificationTrainConfig', 'ResNet34ClassificationTrainConfig']
@@ -112,17 +113,18 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=12). \
             global_shuffle(True).pin_memory(True).drop_last(True)
 
-        train_class_metric_proc = ClassificationMetricsProcessor('train', thresholds=None)
-        train_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
-        train_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
-        validation_class_metric_proc = ClassificationMetricsProcessor('validation', thresholds=None)
-        validation_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
-        validation_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        train_class_metric_proc = ClassificationMetricsProcessor('train', thresholds=[0.3, 0.6, 0.9])
+        # train_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        # train_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        validation_class_metric_proc = ClassificationMetricsProcessor('validation', thresholds=[0.3, 0.6, 0.9])
+        # validation_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        # validation_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
 
         self.train_stage = TrainStage(self._train_data_producer, train_class_metric_proc)
         self.val_stage = ValidationStage(self._val_data_producer, validation_class_metric_proc)
 
-        loss = BCELoss().cuda()
+        # loss = BCELoss().cuda()
+        loss = FocalLoss(alpha=0.28).cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
@@ -174,5 +176,5 @@ class InceptionV3ClassificationTrainConfig(BaseClassificationTrainConfig):
         """
         enc = InceptionV3Encoder(input_channels=1)
         # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
-        model = ClassificationModel(enc, in_features=460800, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
+        model = ClassificationModel(enc, in_features=460800, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')

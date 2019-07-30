@@ -189,8 +189,7 @@ class ClassificationAugmentations:
 
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'])
-        target = np.zeros((2,), dtype=np.float32)
-        target[int(np.count_nonzero(data['target']) > 5)] = 1
+        target = np.array([int(np.count_nonzero(data['target']) > 5)], dtype=np.float32)
         # target = np.array([np.count_nonzero(data['target']) > 5], dtype=np.float32)
         if self._need_to_pytorch:
             img = np.expand_dims(augmented['image'], axis=0)
