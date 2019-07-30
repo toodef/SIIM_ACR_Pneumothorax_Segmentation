@@ -12,6 +12,7 @@ from neural_pipeline import TrainConfig, DataProducer, TrainStage, ValidationSta
 from torch import nn
 from torch.optim import Adam
 from torch.nn import Module, BCEWithLogitsLoss, BCELoss
+import numpy as np
 
 from train_config.dataset import create_augmented_dataset_for_seg, create_augmented_dataset_for_class
 
@@ -91,7 +92,7 @@ class ResNet34SegmentationTrainConfig(BaseSegmentationTrainConfig):
 class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
     experiment_name = 'exp1'
     experiment_dir = os.path.join('experiments', experiment_name)
-    batch_size = 2
+    batch_size = 8
 
     def __init__(self, fold_indices: {}):
         model = self.create_model().cuda()
@@ -106,18 +107,21 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         val_dts = create_augmented_dataset_for_class(is_train=False, is_test=False,
                                                      indices_path=os.path.join(dir, fold_indices['val']))
 
-        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=6). \
+        self._train_data_producer = DataProducer(train_dts, batch_size=self.batch_size, num_workers=12). \
             global_shuffle(True).pin_memory(True).drop_last(True)
-        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=6). \
+        self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=12). \
             global_shuffle(True).pin_memory(True).drop_last(True)
 
-        self.train_stage = TrainStage(self._train_data_producer,
-                                      ClassificationMetricsProcessor('train', [0.5, 0.7, 0.9]))
-        self.val_stage = ValidationStage(self._val_data_producer,
-                                         ClassificationMetricsProcessor('validation', [0.5, 0.7, 0.9]))
+        train_class_metric_proc = ClassificationMetricsProcessor('train', [0.5, 0.7, 0.9])
+        train_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        validation_class_metric_proc = ClassificationMetricsProcessor('validation', [0.5, 0.7, 0.9])
+        validation_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+
+        self.train_stage = TrainStage(self._train_data_producer, train_class_metric_proc)
+        self.val_stage = ValidationStage(self._val_data_producer,validation_class_metric_proc)
 
         loss = BCELoss(weight=torch.Tensor([[0.286, 1]] * self.batch_size), reduction='sum').cuda()
-        optimizer = Adam(params=model.parameters(), lr=1e-4)
+        optimizer = Adam(params=model.parameters(), lr=4e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
 
