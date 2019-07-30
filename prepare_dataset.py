@@ -49,8 +49,15 @@ def check_indices_for_intersection(indices: []):
                     raise Exception('Indices intersects')
 
 
+def balance_classes(hist: np.ndarray, indices: {}) -> tuple:
+    target_hist = hist.copy()
+    target_hist[np.argmax(target_hist)] = np.sum(target_hist[target_hist != target_hist.max()])
+    return target_hist, fill_hist(target_hist, indices)
+
+
 def generate_indices(dataset, for_segmentation) -> None:
     hist, indices = calc_hist(dataset)
+    hist, indices = balance_classes(hist, indices)
 
     train_indices, val_indices, test_indices = stratificate_dataset(hist, indices, [0.7, 0.2, 0.1])
 
