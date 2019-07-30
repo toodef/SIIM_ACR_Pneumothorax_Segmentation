@@ -3,6 +3,7 @@ wdir: .
 deps:
 - path: train_classifier.py
   md5: 904d1470198be1e8026b00990bb3b58f
+- path: train_config/train_config.py
 - path: data/indices/train_class.npy
   md5: 99c05f6f2fb90d1d7abe1ff84fc31cba
 - path: data/indices/val_class.npy
