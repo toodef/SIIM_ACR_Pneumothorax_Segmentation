@@ -123,8 +123,8 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.train_stage = TrainStage(self._train_data_producer, train_class_metric_proc)
         self.val_stage = ValidationStage(self._val_data_producer, validation_class_metric_proc)
 
-        # loss = BCELoss().cuda()
-        loss = FocalLoss(alpha=0.28).cuda()
+        loss = BCELoss().cuda()
+        # loss = FocalLoss(alpha=0.28).cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
@@ -145,7 +145,7 @@ class ResNet18ClassificationTrainConfig(BaseClassificationTrainConfig):
         :return:
         """
         enc = ResNet18(in_channels=1)
-        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')
 
@@ -160,7 +160,7 @@ class ResNet34ClassificationTrainConfig(BaseClassificationTrainConfig):
         :return:
         """
         enc = ResNet34(in_channels=1)
-        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
+        # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')
 
