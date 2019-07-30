@@ -112,10 +112,10 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self._val_data_producer = DataProducer([val_dts], batch_size=self.batch_size, num_workers=12). \
             global_shuffle(True).pin_memory(True).drop_last(True)
 
-        train_class_metric_proc = ClassificationMetricsProcessor('train', [0.5, 0.7, 0.9])
+        train_class_metric_proc = ClassificationMetricsProcessor('train', thresholds=None)
         train_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
         train_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
-        validation_class_metric_proc = ClassificationMetricsProcessor('validation', [0.5, 0.7, 0.9])
+        validation_class_metric_proc = ClassificationMetricsProcessor('validation', thresholds=None)
         validation_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
         validation_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
 
