@@ -114,8 +114,10 @@ class BaseClassificationTrainConfig(TrainConfig, metaclass=ABCMeta):
 
         train_class_metric_proc = ClassificationMetricsProcessor('train', [0.5, 0.7, 0.9])
         train_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        train_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
         validation_class_metric_proc = ClassificationMetricsProcessor('validation', [0.5, 0.7, 0.9])
         validation_class_metric_proc.set_pred_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
+        validation_class_metric_proc.set_target_preproc(lambda x: np.argmax(x.detach().cpu().numpy(), axis=1))
 
         self.train_stage = TrainStage(self._train_data_producer, train_class_metric_proc)
         self.val_stage = ValidationStage(self._val_data_producer,validation_class_metric_proc)
