@@ -146,7 +146,7 @@ class ResNet18ClassificationTrainConfig(BaseClassificationTrainConfig):
         """
         enc = ResNet18(in_channels=1)
         # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
-        model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
+        model = ClassificationModel(enc, in_features=115200, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')
 
 
@@ -161,7 +161,7 @@ class ResNet34ClassificationTrainConfig(BaseClassificationTrainConfig):
         """
         enc = ResNet34(in_channels=1)
         # ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
-        model = ClassificationModel(enc, in_features=115200, classes_num=2, pool=nn.AdaptiveAvgPool2d(15))
+        model = ClassificationModel(enc, in_features=115200, classes_num=1, pool=nn.AdaptiveAvgPool2d(15))
         return ModelWithActivation(model, activation='sigmoid')
 
 
