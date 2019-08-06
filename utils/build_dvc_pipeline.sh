@@ -19,14 +19,14 @@ dvc run -d prepare_dataset.py \
 
 dvc run -d train_classifier.py \
   -f dvc_stages/train_class_resnet18.dvc \
-  -o experiments/$EXP_DIR/class/resnet18
+  -o experiments/$EXP_DIR/class/resnet18 \
   -d data/indices/train_class.npy \
   -d data/indices/val_class.npy \
   --no-exec python train_classifier.py -m resnet18
 
 dvc run -d train_classifier.py \
   -f dvc_stages/train_class_resnet34.dvc \
-  -o experiments/$EXP_DIR/class/resnet34
+  -o experiments/$EXP_DIR/class/resnet34 \
   -d data/indices/train_class.npy \
   -d data/indices/val_class.npy \
   --no-exec python train_classifier.py -m resnet34
@@ -37,6 +37,7 @@ dvc run -d class_eval.py \
   -f dvc_stages/predict_class.dvc \
   -d experiments/$EXP_DIR/class/resnet18 \
   -d experiments/$EXP_DIR/class/resnet34 \
+  -d data/indices/test_class.npy \
   -o out/class/class_predict.csv \
   --no-exec python class_eval.py -m resnet18 resnet34 -o out/class/class_predict.csv
 
@@ -59,7 +60,7 @@ dvc run -d train_segmentation.py \
 ######### PREDICT SEG #########
 
 dvc run -d predict_model_seg.py \
-  -f predict_resnet18seg.dvc \
+  -f dvc_stages/predict_resnet18seg.dvc \
   -d experiments/$EXP_DIR/seg/resnet18 \
   -d data/indices/test_seg.npy \
   -o out/seg/resnet18_out.csv \
