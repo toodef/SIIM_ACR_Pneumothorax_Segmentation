@@ -38,7 +38,7 @@ dvc run -d class_eval.py \
   -d experiments/$EXP_DIR/class/resnet18 \
   -d experiments/$EXP_DIR/class/resnet34 \
   -o out/class/class_predict.csv \
-  --no-exec python class_eval.py -m resnet18,resnet34 -o out/class/class_predict.csv
+  --no-exec python class_eval.py -m resnet18 resnet34 -o out/class/class_predict.csv
 
 ######### TRAIN SEG #########
 
