@@ -52,7 +52,7 @@ dvc run -d train_segmentation.py \
 
 dvc run -d train_segmentation.py \
   -f dvc_stages/train_resnet34seg.dvc \
-  -o experiments/$EXP_DIR/seg/resnet34 -f train_resnet34seg.dvc \
+  -o experiments/$EXP_DIR/seg/resnet34 \
   -d data/indices/train_seg.npy \
   -d data/indices/val_seg.npy \
   --no-exec python train_segmentation.py -m resnet34
