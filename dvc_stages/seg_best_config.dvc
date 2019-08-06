@@ -1,5 +1,5 @@
 cmd: python detect_seg_best_predict_config.py
-wdir: .
+wdir: ..
 deps:
 - path: detect_seg_best_predict_config.py
 - path: out/seg/resnet18_out.csv

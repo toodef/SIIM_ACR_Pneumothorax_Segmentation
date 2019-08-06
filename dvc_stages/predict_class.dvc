@@ -1,0 +1,12 @@
+cmd: python class_eval.py -m resnet18 resnet34 -o out/class/class_predict.csv
+wdir: ..
+deps:
+- path: class_eval.py
+- path: experiments/exp1/class/resnet18
+- path: experiments/exp1/class/resnet34
+- path: data/indices/test_class.npy
+outs:
+- path: out/class/class_predict.csv
+  cache: true
+  metric: false
+  persist: false

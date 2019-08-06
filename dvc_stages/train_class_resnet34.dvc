@@ -1,0 +1,11 @@
+cmd: python train_classifier.py -m resnet34
+wdir: ..
+deps:
+- path: train_classifier.py
+- path: data/indices/train_class.npy
+- path: data/indices/val_class.npy
+outs:
+- path: experiments/exp1/class/resnet34
+  cache: true
+  metric: false
+  persist: false
