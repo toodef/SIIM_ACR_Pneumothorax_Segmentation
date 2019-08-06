@@ -50,7 +50,7 @@ dvc run -d train_segmentation.py \
   --no-exec python train_segmentation.py -m resnet18
 
 dvc run -d train_segmentation.py \
-  -f dvc_stages/
+  -f dvc_stages/train_resnet34seg.dvc \
   -o experiments/$EXP_DIR/seg/resnet34 -f train_resnet34seg.dvc \
   -d data/indices/train_seg.npy \
   -d data/indices/val_seg.npy \
@@ -86,5 +86,5 @@ dvc run -d final_predict.py \
   -o out/seg/final_predict.csv \
   --no-exec python final_predict.py
 
-git add *.dvc
+git add dvc_stages/*.dvc
 git add Dvcfile
