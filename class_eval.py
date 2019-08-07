@@ -25,7 +25,7 @@ def predict_on_test_set(config_type: type(BaseClassificationTrainConfig)):
     predicts, targets = [], []
 
     for i, data in enumerate(tqdm(dataset)):
-        targets.append(np.squeeze(data['target'].data.cpu().numpy()))
+        targets.append(np.squeeze(data['target']))
 
         data = cv2.resize(data['data'], (512, 512))
         img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
