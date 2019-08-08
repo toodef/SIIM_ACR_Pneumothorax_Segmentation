@@ -189,7 +189,7 @@ class ClassificationAugmentations:
 
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'])
-        target = np.array([int(np.count_nonzero(data['target']) > 5)], dtype=np.float32)
+        target = np.array([self.mask2class(data['target'])], dtype=np.float32)
         # target = np.array([np.count_nonzero(data['target']) > 5], dtype=np.float32)
         if self._need_to_pytorch:
             img = np.expand_dims(augmented['image'], axis=0)
@@ -197,6 +197,10 @@ class ClassificationAugmentations:
             return {'data': torch.from_numpy(image), 'target': torch.from_numpy(target)}
         else:
             return {'data': augmented['image'], 'target': target}
+
+    @staticmethod
+    def mask2class(mask: np.ndarray) -> int:
+        return int(np.count_nonzero(mask) > 5)
 
 
 def create_dataset(is_test: bool, include_negatives: bool, indices_path: str = None) -> 'Dataset':

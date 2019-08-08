@@ -11,7 +11,7 @@ from neural_pipeline import Predictor, FileStructManager
 from sklearn.metrics import roc_auc_score
 from tqdm import tqdm
 
-from train_config.dataset import create_dataset
+from train_config.dataset import create_dataset, ClassificationAugmentations
 from train_config.train_config import BaseClassificationTrainConfig, ResNet18ClassificationTrainConfig, \
     ResNet34ClassificationTrainConfig
 
@@ -25,7 +25,7 @@ def predict_on_test_set(config_type: type(BaseClassificationTrainConfig)):
     predicts, targets = [], []
 
     for i, data in enumerate(tqdm(dataset)):
-        targets.append(np.squeeze(data['target']))
+        targets.append(ClassificationAugmentations.mask2class(data['target']))
 
         data = cv2.resize(data['data'], (512, 512))
         img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
@@ -36,7 +36,7 @@ def predict_on_test_set(config_type: type(BaseClassificationTrainConfig)):
 
 
 def predict_results(config_types: [type(BaseClassificationTrainConfig)], output_file: str, threshold: float):
-    dataset = create_dataset(is_test=True, include_negatives=True, indices_path='data/indices/test_class.npy')
+    dataset = create_dataset(is_test=True, include_negatives=True)
 
     output_dir = os.path.dirname(output_file)
     if not os.path.exists(output_dir) and not os.path.isdir(output_dir):
@@ -53,7 +53,7 @@ def predict_results(config_types: [type(BaseClassificationTrainConfig)], output_
 
         images_paths = dataset.get_items()
         for i, data in enumerate(tqdm(dataset)):
-            data = cv2.resize(data['data'], (512, 512))
+            data = cv2.resize(data, (512, 512))
             img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
 
             res = []
@@ -73,7 +73,7 @@ def merge_predicts(predicts: []) -> {}:
         if type(res['predicts']) is not list:
             res['predicts'] = [res['predicts']]
         res['predicts'] += [pred['predicts']]
-        res['models'].extend(res['models'])
+        res['models'].extend(pred['models'])
 
     res['predicts'] = np.median(res['predicts'], axis=0)
     return res
@@ -98,20 +98,20 @@ if __name__ == '__main__':
 
     model_configs = {'resnet18': ResNet18ClassificationTrainConfig,
                      'resnet34': ResNet34ClassificationTrainConfig}
-    all_predicts = {}
+    all_predicts = []
     for model in args.models:
         if model not in model_configs:
             raise Exception("Train pipeline doesn't implemented for model '{}'".format(args.model))
 
-        all_predicts[model] = {'models': [model], 'predicts': predict_on_test_set(model_configs[model])}
+        all_predicts.append({'models': [model], 'predicts': predict_on_test_set(model_configs[model])})
 
-    for cmb_len in tqdm(range(2, len(all_predicts))):
+    for cmb_len in tqdm(range(2, len(all_predicts) + 1)):
         for cmb in itertools.combinations(all_predicts, cmb_len):
             all_predicts.append(merge_predicts(cmb))
 
     best_predict, best_metric = None, 0
     for predict in all_predicts:
-        for thresh in np.linspace(0.1, 0.99, num=int((0.99 - 0.1) / 0.01)):
+        for thresh in np.linspace(0.6, 0.99, num=int((0.99 - 0.6) / 0.01)):
             cur_metric = calc_metric(predict, threshold=thresh)
 
             if cur_metric > best_metric:
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                 best_metric = cur_metric
 
     with open('best_class_config.json', 'w') as out:
-        json.dump({'models': best_predict['models'], 'thresh': best_predict['thresh']}, out)
+        json.dump({'models': best_predict['models'], 'thresh': best_predict['thresh'], 'metric': best_metric}, out)
 
     predict_results([model_configs[model] for model in best_predict['models']], args.out,
                     threshold=best_predict['thresh'])
