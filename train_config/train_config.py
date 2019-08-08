@@ -70,7 +70,7 @@ class ResNet18SegmentationTrainConfig(BaseSegmentationTrainConfig):
         :return:
         """
         enc = ResNet18(in_channels=1)
-        ModelsWeightsStorage().load(enc, 'imagenet')
+        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
 
@@ -85,7 +85,7 @@ class ResNet34SegmentationTrainConfig(BaseSegmentationTrainConfig):
         :return:
         """
         enc = ResNet34(in_channels=1)
-        ModelsWeightsStorage().load(enc, 'imagenet')
+        ModelsWeightsStorage().load(enc, 'imagenet', params={'cin': 1})
         model = UNetDecoder(enc, classes_num=1)
         return ModelWithActivation(model, activation='sigmoid')
 
