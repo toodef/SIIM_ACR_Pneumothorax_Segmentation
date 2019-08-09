@@ -59,33 +59,34 @@ dvc run -d train_segmentation.py \
 
 ######### PREDICT SEG #########
 
-dvc run -d predict_model_seg.py \
-  -f dvc_stages/predict_resnet18seg.dvc \
-  -d experiments/$EXP_DIR/seg/resnet18 \
-  -d data/indices/test_seg.npy \
-  -o out/seg/resnet18_out.csv \
-  --no-exec python predict_model_seg.py -m resnet18 -o out/resnet18_out.csv
-
-dvc run -d predict_model_seg.py \
-  -f dvc_stages/predict_resnet34seg.dvc \
-  -d experiments/$EXP_DIR/seg/resnet34 \
-  -d data/indices/test_seg.npy \
-  -o out/seg/resnet34_out.csv \
-  --no-exec python predict_model_seg.py -m resnet34 -o out/resnet34_out.csv
-
-dvc run -d detect_seg_best_predict_config.py \
-  -f dvc_stages/seg_best_config.dvc \
-  -d out/seg/resnet18_out.csv \
-  -d out/seg/resnet34_out.csv \
-  -o out/seg/seg_best_predict.json \
-  --no-exec python detect_seg_best_predict_config.py
+#dvc run -d predict_model_seg.py \
+#  -f dvc_stages/predict_resnet18seg.dvc \
+#  -d experiments/$EXP_DIR/seg/resnet18 \
+#  -d data/indices/test_seg.npy \
+#  -o out/seg/resnet18_out.csv \
+#  --no-exec python predict_model_seg.py -m resnet18 -o out/resnet18_out.csv
+#
+#dvc run -d predict_model_seg.py \
+#  -f dvc_stages/predict_resnet34seg.dvc \
+#  -d experiments/$EXP_DIR/seg/resnet34 \
+#  -d data/indices/test_seg.npy \
+#  -o out/seg/resnet34_out.csv \
+#  --no-exec python predict_model_seg.py -m resnet34 -o out/resnet34_out.csv
+#
+#dvc run -d detect_seg_best_predict_config.py \
+#  -f dvc_stages/seg_best_config.dvc \
+#  -d out/seg/resnet18_out.csv \
+#  -d out/seg/resnet34_out.csv \
+#  -o out/seg/seg_best_predict.json \
+#  --no-exec python detect_seg_best_predict_config.py
 
 dvc run -d final_predict.py \
   -f Dvcfile \
-  -d out/seg/seg_best_predict.json \
+  -d experiments/$EXP_DIR/seg/resnet18 \
+  -d experiments/$EXP_DIR/seg/resnet34 \
   -d out/class/class_predict.csv \
   -o out/seg/final_predict.csv \
-  --no-exec python final_predict.py
+  --no-exec python final_predict.py -m resnet18 resnet34 -o out/seg/final_predict.csv -c out/class/class_predict.csv
 
 git add dvc_stages/*.dvc
 git add Dvcfile
