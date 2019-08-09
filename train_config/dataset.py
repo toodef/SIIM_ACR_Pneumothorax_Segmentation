@@ -8,7 +8,7 @@ from pydicom.data import get_testdata_files
 import numpy as np
 import torch
 from albumentations import Compose, HorizontalFlip, Resize, Rotate, OneOf, RandomContrast, RandomGamma, RandomBrightness, \
-    ElasticTransform, GridDistortion, OpticalDistortion, RandomSizedCrop, RandomCrop, RandomBrightnessContrast
+    ElasticTransform, GridDistortion, OpticalDistortion, RandomSizedCrop, RandomCrop, RandomBrightnessContrast, GaussNoise
 from cv_utils.datasets.common import BasicDataset
 
 __all__ = ['Dataset', 'AugmentedDataset', 'create_dataset', 'create_augmented_dataset_for_seg',
@@ -135,16 +135,17 @@ class SegmentationAugmentations:
         if is_train:
             self._aug = Compose([preprocess,
                                  HorizontalFlip(p=0.5),
-                                 OneOf([
-                                     RandomBrightnessContrast(),
-                                     RandomGamma(),
-                                 ], p=0.3),
-                                 OneOf([
-                                     ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
-                                     GridDistortion(),
-                                     OpticalDistortion(distort_limit=2, shift_limit=0.5),
-                                 ], p=0.3),
-                                 Rotate(limit=20),
+                                 GaussNoise(p=0.3),
+                                 # OneOf([
+                                 #     RandomBrightnessContrast(),
+                                 #     RandomGamma(),
+                                 # ], p=0.3),
+                                 # OneOf([
+                                 #     ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
+                                 #     GridDistortion(),
+                                 #     OpticalDistortion(distort_limit=2, shift_limit=0.5),
+                                 # ], p=0.3),
+                                 Rotate(limit=20, border_mode=cv2.BORDER_REPLICATE),
                                  ], p=1)
         else:
             self._aug = preprocess
@@ -153,6 +154,9 @@ class SegmentationAugmentations:
 
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'], mask=data['target'])
+        clahe = cv2.createCLAHE(clipLimit=2.0)
+        augmented['image'] = clahe.apply(augmented['image'])
+
         if self._need_to_pytorch:
             img = np.expand_dims(augmented['image'], axis=0)
             image = img.astype(np.float32) / 128 - 1
@@ -171,15 +175,16 @@ class ClassificationAugmentations:
         if is_train:
             self._aug = Compose([preprocess,
                                  HorizontalFlip(p=0.5),
-                                 OneOf([
-                                     RandomBrightnessContrast(),
-                                     RandomGamma(),
-                                 ], p=0.3),
-                                 OneOf([
-                                     ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
-                                     GridDistortion(),
-                                     OpticalDistortion(distort_limit=2, shift_limit=0.5),
-                                 ], p=0.3),
+                                 GaussNoise(p=0.3),
+                                 # OneOf([
+                                 #     RandomBrightnessContrast(),
+                                 #     RandomGamma(),
+                                 # ], p=0.3),
+                                 # OneOf([
+                                 #     ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
+                                 #     GridDistortion(),
+                                 #     OpticalDistortion(distort_limit=2, shift_limit=0.5),
+                                 # ], p=0.3),
                                  Rotate(limit=20),
                                  ], p=1)
         else:
@@ -190,7 +195,10 @@ class ClassificationAugmentations:
     def augmentate(self, data: {}):
         augmented = self._aug(image=data['data'])
         target = np.array([self.mask2class(data['target'])], dtype=np.float32)
-        # target = np.array([np.count_nonzero(data['target']) > 5], dtype=np.float32)
+
+        clahe = cv2.createCLAHE(clipLimit=2.0)
+        augmented['image'] = clahe.apply(augmented['image'])
+
         if self._need_to_pytorch:
             img = np.expand_dims(augmented['image'], axis=0)
             image = img.astype(np.float32) / 128 - 1

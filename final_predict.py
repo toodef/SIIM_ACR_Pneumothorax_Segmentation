@@ -51,6 +51,9 @@ def predict(config_types: [type(BaseSegmentationTrainConfig)], output_file: str,
                 res[res > 0] = 255
                 rle = mask2rle(res)
 
+                if len(rle) < 1:
+                    rle = '-1'
+
             out_file.write("{},{}\n".format(cur_img_path, rle))
             out_file.flush()
 
