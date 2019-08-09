@@ -32,18 +32,18 @@ def predict(config_types: [type(BaseSegmentationTrainConfig)], output_file: str,
 
         images_paths = dataset.get_items()
         for i, data in enumerate(tqdm(dataset)):
-            cur_img_path = images_paths[i]
+            cur_img_path = os.path.splitext(os.path.basename(images_paths[i]))[0]
             data = cv2.resize(data, (512, 512))
             img_tensor = torch.from_numpy(np.expand_dims(np.expand_dims(data.astype(np.float32), 0) / 128 - 1, 0)).cuda()
 
             res = []
             for predictor in predictors:
                 res.append(np.squeeze(predictor.predict({'data': img_tensor}).data.cpu().numpy()))
-            res = np.median(res)
+            res = np.median(res, axis=0)
             res[res < 0.7] = 0
 
             if not class_predicts[cur_img_path]:
-                rle = -1
+                rle = '-1'
             else:
                 res = (res * 255).astype(np.uint8)
                 res = cv2.resize(res, (1024, 1024))
@@ -51,7 +51,7 @@ def predict(config_types: [type(BaseSegmentationTrainConfig)], output_file: str,
                 res[res > 0] = 255
                 rle = mask2rle(res)
 
-            out_file.write("{},{}\n".format(os.path.splitext(os.path.basename(cur_img_path))[0], rle))
+            out_file.write("{},{}\n".format(cur_img_path, rle))
             out_file.flush()
 
 
@@ -69,8 +69,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     with open(args.class_predict, 'r') as class_predict_file:
-        class_predicts = np.loadtxt(class_predict_file, delimiter=',', type=str)[1:]
-    class_predicts = {v[0]: bool(v[1]) for v in class_predicts}
+        class_predicts = np.loadtxt(class_predict_file, delimiter=',', dtype=str)[1:]
+    class_predicts = {v[0]: bool(int(float(v[1]))) for v in class_predicts}
 
     model_configs = {'resnet18': ResNet18SegmentationTrainConfig,
                      'resnet34': ResNet34SegmentationTrainConfig}

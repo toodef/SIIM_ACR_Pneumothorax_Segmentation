@@ -85,6 +85,7 @@ dvc run -d final_predict.py \
   -d experiments/$EXP_DIR/seg/resnet18 \
   -d experiments/$EXP_DIR/seg/resnet34 \
   -d out/class/class_predict.csv \
+  -d final_predict.py \
   -o out/seg/final_predict.csv \
   --no-exec python final_predict.py -m resnet18 resnet34 -o out/seg/final_predict.csv -c out/class/class_predict.csv
 
