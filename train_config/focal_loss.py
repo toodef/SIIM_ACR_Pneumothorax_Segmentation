@@ -1,16 +1,39 @@
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from torch import nn
 
 
 class FocalLoss(nn.Module):
-    def __init__(self, alpha: float, gamma: float = 2.0, device: torch.device = torch.device('cuda:0')) -> None:
-        super(FocalLoss, self).__init__()
-        self.alpha: float = alpha
-        self.gamma: torch.Tensor = torch.tensor(gamma, device=device)
+    def __init__(self, gamma):
+        super().__init__()
+        self.gamma = gamma
 
-    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        BCE_loss = F.binary_cross_entropy_with_logits(input, target, reduction='none')
-        pt = torch.exp(-BCE_loss)  # prevents nans when probability 0
-        F_loss = self.alpha * (1 - pt) ** self.gamma * BCE_loss
-        return F_loss.mean()
+    def forward(self, input, target):
+        if not (target.size() == input.size()):
+            raise ValueError("Target size ({}) must be the same as input size ({})"
+                             .format(target.size(), input.size()))
+        max_val = (-input).clamp(min=0)
+        loss = input - input * target + max_val + \
+               ((-max_val).exp() + (-input - max_val).exp()).log()
+        invprobs = F.logsigmoid(-input * (target * 2.0 - 1.0))
+        loss = (invprobs * self.gamma).exp() * loss
+        return loss.mean()
+
+
+def dice_loss(input, target):
+    input = torch.sigmoid(input)
+    smooth = 1.0
+    iflat = input.view(-1)
+    tflat = target.view(-1)
+    intersection = (iflat * tflat).sum()
+    return (2.0 * intersection + smooth) / (iflat.sum() + tflat.sum() + smooth)
+
+
+class FocalDiceLoss(nn.Module):
+    def __init__(self, alpha, gamma):
+        super().__init__()
+        self.alpha = alpha
+        self.focal = FocalLoss(gamma)
+
+    def forward(self, input, target):
+        loss = self.alpha * self.focal(input, target) - torch.log(dice_loss(input, target))
+        return loss.mean()

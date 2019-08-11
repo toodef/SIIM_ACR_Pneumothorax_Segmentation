@@ -15,7 +15,7 @@ from torch.nn import Module, BCEWithLogitsLoss, BCELoss
 import numpy as np
 
 from train_config.dataset import create_augmented_dataset_for_seg, create_augmented_dataset_for_class
-from train_config.focal_loss import FocalLoss
+from train_config.focal_loss import FocalLoss, FocalDiceLoss
 
 __all__ = ['BaseSegmentationTrainConfig', 'ResNet18SegmentationTrainConfig', 'ResNet34SegmentationTrainConfig',
            'BaseClassificationTrainConfig', 'ResNet18ClassificationTrainConfig', 'ResNet34ClassificationTrainConfig']
@@ -49,7 +49,7 @@ class BaseSegmentationTrainConfig(TrainConfig, metaclass=ABCMeta):
         self.train_stage = TrainStage(self._train_data_producer, SegmentationMetricsProcessor('train'))
         self.val_stage = ValidationStage(self._val_data_producer, SegmentationMetricsProcessor('validation'))
 
-        loss = BCEDiceLoss(0.5, 0.5, reduction=Reduction('mean')).cuda()
+        loss = FocalDiceLoss(alpha=10, gamma=2)  # BCEDiceLoss(0.5, 0.5, reduction=Reduction('mean')).cuda()
         optimizer = Adam(params=model.parameters(), lr=1e-4)
 
         super().__init__(model, [self.train_stage, self.val_stage], loss, optimizer)
